@@ -1,3 +1,4 @@
 .env
 AuthService/obj
 AuthService/bin
+AuthService/appsettings.Development.json

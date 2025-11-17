@@ -1,9 +1,12 @@
 {
   "cSpell.words": [
+    "appsettings",
     "ASPNETCORE",
     "authdb",
     "authpgadmin",
     "authpgadmindata",
+    "authpostgres",
+    "authpostgresdata",
     "Entra",
     "Iddict",
     "Npgsql",

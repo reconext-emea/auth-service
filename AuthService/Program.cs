@@ -1,27 +1,24 @@
 using AuthService.Data;
 using AuthService.Models;
-using DotNetEnv;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Environment.IsDevelopment())
-{
-    Env.Load();
-}
-
 var config = builder.Configuration;
+
 var services = builder.Services;
 
 // ---------- DB ----------
 services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connStr = config.GetConnectionString("DefaultConnection");
+    string? connStr = config.GetConnectionString("DefaultConnection");
 
     if (string.IsNullOrWhiteSpace(connStr))
+    {
         throw new Exception("DefaultConnection connection string is missing.");
+    }
 
     options.UseNpgsql(connStr);
     options.UseOpenIddict();
