@@ -17,6 +17,8 @@ services:
   authpostgres:
     image: postgres:18.1
     container_name: authpostgres
+    ports:
+      - 5082:5432
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
