@@ -1,7 +1,10 @@
+using AuthService.Clients.LdapClient;
 using AuthService.Data;
 using AuthService.Models;
+using AuthService.Services.OpenIddict;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Server;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +13,12 @@ var config = builder.Configuration;
 
 var services = builder.Services;
 
+services.AddSingleton<LdapConfig>();
+services.AddScoped<LdapClient>();
+services.AddScoped<PasswordGrantHandler>();
+
 // ---------- DB ----------
-services.AddDbContext<ApplicationDbContext>(options =>
+services.AddDbContext<AuthServiceDbContext>(options =>
 {
     string? connStr = config.GetConnectionString("DefaultConnection");
 
@@ -26,12 +33,12 @@ services.AddDbContext<ApplicationDbContext>(options =>
 
 // ---------- Identity ----------
 services
-    .AddIdentity<ApplicationUser, IdentityRole>(options =>
+    .AddIdentity<AuthServiceUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = true; //  Gets or sets a flag indicating whether the application requires unique emails for its users. Defaults to false.
         options.Lockout.AllowedForNewUsers = false; // Gets or sets a flag indicating whether a new user can be locked out. Defaults to true.
     })
-    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddEntityFrameworkStores<AuthServiceDbContext>()
     .AddDefaultTokenProviders();
 
 // ---------- OpenIddict (token server) ----------
@@ -39,24 +46,40 @@ services
     .AddOpenIddict()
     .AddCore(options =>
     {
-        options.UseEntityFrameworkCore().UseDbContext<ApplicationDbContext>();
+        options.UseEntityFrameworkCore().UseDbContext<AuthServiceDbContext>();
     })
     .AddServer(options =>
     {
-        options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
+        options.AllowPasswordFlow();
         options.AllowRefreshTokenFlow();
 
-        options.SetAuthorizationEndpointUris("/connect/authorize");
         options.SetTokenEndpointUris("/connect/token");
+
+        options.AcceptAnonymousClients();
 
         options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Profile, "api");
 
-        options.AddDevelopmentEncryptionCertificate().AddDevelopmentSigningCertificate();
+        options.DisableAccessTokenEncryption();
 
-        options
-            .UseAspNetCore()
-            .EnableAuthorizationEndpointPassthrough()
-            .EnableTokenEndpointPassthrough();
+        if (builder.Environment.IsDevelopment())
+        {
+            options.UseAspNetCore().DisableTransportSecurityRequirement(); // for HTTP localhost
+            // .EnableTokenEndpointPassthrough();
+
+            options.AddDevelopmentEncryptionCertificate().AddDevelopmentSigningCertificate();
+        }
+        else
+        {
+            options.UseAspNetCore(); // .EnableTokenEndpointPassthrough();
+
+            // options.AddEncryptionCertificate(...);
+            // options.AddSigningCertificate(...);
+        }
+
+        options.AddEventHandler<OpenIddictServerEvents.HandleTokenRequestContext>(builder =>
+        {
+            builder.UseScopedHandler<PasswordGrantHandler>();
+        });
     })
     .AddValidation(options =>
     {
@@ -82,6 +105,12 @@ services.AddCors(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AuthServiceDbContext>();
+    db.Database.Migrate();
+}
+
 // ---------- Middleware ----------
 if (app.Environment.IsDevelopment())
 {
@@ -89,8 +118,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors();
 app.UseRouting();
+app.UseCors();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

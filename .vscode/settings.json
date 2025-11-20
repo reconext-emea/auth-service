@@ -7,10 +7,12 @@
     "authpgadmindata",
     "authpostgres",
     "authpostgresdata",
+    "Emea",
     "Entra",
     "Iddict",
     "Npgsql",
     "pgadmin",
+    "reconext",
     "Swashbuckle"
   ]
 }
