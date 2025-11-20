@@ -2,6 +2,6 @@ namespace AuthService.Clients.LdapClient;
 
 public record LdapAuthenticateAsyncResult(
     bool Success,
-    string? Error = null,
+    LdapError? Error = null,
     LdapUser? User = null
 );

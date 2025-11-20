@@ -7,14 +7,14 @@ public class LdapConfig(IConfiguration config)
 
     public TechnicalUser TechnicalUser { get; } =
         new(
-            RequireEnv(config, "Ldap__TechnicalUsername"),
-            RequireEnv(config, "Ldap__TechnicalDomain"),
-            RequireEnv(config, "Ldap__TechnicalPassword")
+            RequireEnv(config, "Ldap", "TechnicalUsername"),
+            RequireEnv(config, "Ldap", "TechnicalDomain"),
+            RequireEnv(config, "Ldap", "TechnicalPassword")
         );
 
     private static Dictionary<string, string> GetAllowedDomains(IConfiguration config)
     {
-        string value = RequireEnv(config, "Ldap__AllowedDomains");
+        string value = RequireEnv(config, "Ldap", "AllowedDomains");
         IEnumerable<string> enumerableValue = ToEnumerable(value);
         return enumerableValue.ToDictionary(
             domain => domain,
@@ -24,14 +24,14 @@ public class LdapConfig(IConfiguration config)
 
     private static List<string> GetAllowedEmeaOfficeNames(IConfiguration config)
     {
-        string value = RequireEnv(config, "Ldap__AllowedEmeaOfficeNames");
+        string value = RequireEnv(config, "Ldap", "AllowedEmeaOfficeNames");
         IEnumerable<string> enumerableValue = ToEnumerable(value);
         return enumerableValue.ToList();
     }
 
-    private static string RequireEnv(IConfiguration config, string key)
+    private static string RequireEnv(IConfiguration config, string section, string key)
     {
-        string? value = config[key];
+        string? value = config.GetSection(section)[key];
 
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException($"Missing required environment variable: {key}");

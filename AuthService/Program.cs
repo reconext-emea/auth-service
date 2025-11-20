@@ -1,9 +1,10 @@
 using AuthService.Clients.LdapClient;
 using AuthService.Data;
 using AuthService.Models;
-using AuthService.Services.Token;
+using AuthService.Services.OpenIddict;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Server;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +15,7 @@ var services = builder.Services;
 
 services.AddSingleton<LdapConfig>();
 services.AddScoped<LdapClient>();
-services.AddScoped<ITokenService, TokenService>();
+services.AddScoped<PasswordGrantHandler>();
 
 // ---------- DB ----------
 services.AddDbContext<AuthServiceDbContext>(options =>
@@ -49,55 +50,36 @@ services
     })
     .AddServer(options =>
     {
-        // Enable the flows (OAuth2/OpenID Connect flows) you want to support.
-        // Authorization Code Flow is the standard browser-based login flow.
-        // PKCE (Proof Key for Code Exchange) secures public clients like SPAs and mobile apps.
-        options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
-
-        // Allows issuing refresh tokens, enabling clients to stay logged in
-        // without re-entering credentials.
+        options.AllowPasswordFlow();
         options.AllowRefreshTokenFlow();
 
-        // Registers the authorization endpoint URI.
-        // This endpoint is used for redirect-based user login flows.
-        options.SetAuthorizationEndpointUris("connect/authorize");
+        options.SetTokenEndpointUris("/connect/token");
 
-        // Registers the token endpoint URI.
-        // This endpoint is used to exchange authorization codes or refresh tokens
-        // for access tokens and ID tokens.
-        options.SetTokenEndpointUris("connect/token");
+        options.AcceptAnonymousClients();
 
-        // Declares the list of supported scopes.
-        // openid  -> enables OpenID Connect and ID tokens
-        // email   -> allows sending email claim in tokens
-        // profile -> allows sending profile claims (name, etc.)
-        // api     -> your custom API access scope
         options.RegisterScopes(Scopes.OpenId, Scopes.Email, Scopes.Profile, "api");
+
+        options.DisableAccessTokenEncryption();
 
         if (builder.Environment.IsDevelopment())
         {
-            // Adds development certificates for token signing and encryption.
-            // These are auto-generated per environment and only for local dev.
+            options.UseAspNetCore().DisableTransportSecurityRequirement(); // for HTTP localhost
+            // .EnableTokenEndpointPassthrough();
+
             options.AddDevelopmentEncryptionCertificate().AddDevelopmentSigningCertificate();
         }
         else
         {
-            // PRODUCTION: use real certificates
+            options.UseAspNetCore(); // .EnableTokenEndpointPassthrough();
+
             // options.AddEncryptionCertificate(...);
             // options.AddSigningCertificate(...);
         }
 
-        // Integrates OpenIddict with ASP.NET Core.
-        // Enables passthrough so your controllers can customize responses
-        // instead of OpenIddict always handling them automatically.
-        // - EnableAuthorizationEndpointPassthrough():
-        //      Lets your own code run during /connect/authorize requests.
-        // - EnableTokenEndpointPassthrough():
-        //      Allows issuing tokens via SignIn(principal, scheme) inside controllers.
-        options
-            .UseAspNetCore()
-            .EnableAuthorizationEndpointPassthrough()
-            .EnableTokenEndpointPassthrough();
+        options.AddEventHandler<OpenIddictServerEvents.HandleTokenRequestContext>(builder =>
+        {
+            builder.UseScopedHandler<PasswordGrantHandler>();
+        });
     })
     .AddValidation(options =>
     {
@@ -136,8 +118,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors();
 app.UseRouting();
+app.UseCors();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

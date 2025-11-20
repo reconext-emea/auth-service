@@ -1,0 +1,9 @@
+{
+  "name": "@reconext/auth-service-frontend-types",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./frontend-types/index.ts"
+  },
+  "types": "./frontend-types/index.ts"
+}

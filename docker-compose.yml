@@ -11,6 +11,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
+      - Ldap__TechnicalUsername=${Ldap__TechnicalUsername}
+      - Ldap__TechnicalDomain=${Ldap__TechnicalDomain}
+      - Ldap__TechnicalPassword=${Ldap__TechnicalPassword}
+      - Ldap__AllowedDomains=${Ldap__AllowedDomains}
+      - Ldap__AllowedEmeaOfficeNames=${Ldap__AllowedEmeaOfficeNames}
     depends_on:
       - authpostgres
 

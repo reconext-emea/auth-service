@@ -10,7 +10,7 @@ public class LdapClient(LdapConfig config, ILogger<LdapClient> logger) : ILdapCl
     public async Task<LdapAuthenticateAsyncResult> AuthenticateAsync(UserPassport passport)
     {
         if (!_config.AllowedDomains.TryGetValue(passport.Domain, out var baseDn))
-            return new(false, "DomainNotAllowed");
+            return new(false, LdapError.DomainNotAllowed);
 
         TechnicalUser tu = _config.TechnicalUser;
 
@@ -35,7 +35,7 @@ public class LdapClient(LdapConfig config, ILogger<LdapClient> logger) : ILdapCl
             );
 
             if (!await results.HasMoreAsync())
-                return new(false, "UserNotFound");
+                return new(false, LdapError.UserNotFound);
 
             LdapEntry user = await results.NextAsync();
 
@@ -46,7 +46,7 @@ public class LdapClient(LdapConfig config, ILogger<LdapClient> logger) : ILdapCl
                 || !_config.AllowedEmeaOfficeNames.Contains(officeName)
             )
             {
-                return new(false, "OfficeNotAllowed");
+                return new(false, LdapError.OfficeNotAllowed);
             }
 
             await connection.BindAsync(user.Dn, passport.Password);
@@ -57,15 +57,10 @@ public class LdapClient(LdapConfig config, ILogger<LdapClient> logger) : ILdapCl
         }
         catch (LdapException ex)
         {
-            _logger.LogError(
-                ex,
-                "LDAP failed. Code={Code}, Message={Message}, LdapMessage={LdapMsg}",
-                ex.ResultCode,
-                ex.Message,
-                ex.LdapErrorMessage
-            );
+            if (ex.ResultCode == LdapException.InvalidCredentials)
+                return new(false, LdapError.InvalidCredentials);
 
-            return new(Success: false, Error: ex.ResultCodeToString());
+            return new(false, LdapError.ServerError);
         }
     }
 }
