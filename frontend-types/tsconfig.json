@@ -6,13 +6,12 @@
     "declaration": true,
     "emitDeclarationOnly": false,
 
-    "outDir": "./frontend-types/dist",
-    "declarationDir": "./frontend-types/dist",
+    "outDir": "./dist",
+    "declarationDir": "./dist",
 
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-
-  "include": ["frontend-types/src"]
+  "include": ["./src"]
 }
