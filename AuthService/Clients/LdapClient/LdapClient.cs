@@ -2,16 +2,25 @@ using Novell.Directory.Ldap;
 
 namespace AuthService.Clients.LdapClient;
 
-public class LdapClient(LdapConfig config, ILogger<LdapClient> logger) : ILdapClient
+public class LdapClient : ILdapClient
 {
-    private readonly LdapConfig _config = config;
-    private readonly ILogger<LdapClient> _logger = logger;
+    private readonly LdapConfig _config;
+    private readonly Func<ILdapConnection> _connectionFactory;
+
+    public LdapClient(LdapConfig config)
+    {
+        _config = config;
+        _connectionFactory = () => new LdapConnection { SecureSocketLayer = false };
+    }
+
+    public LdapClient(LdapConfig config, Func<ILdapConnection> connectionFactory)
+    {
+        _config = config;
+        _connectionFactory = connectionFactory;
+    }
 
     public async Task<LdapAuthenticateAsyncResult> AuthenticateAsync(UserPassport passport)
     {
-        if (!_config.AllowedDomains.TryGetValue(passport.Domain, out var baseDn))
-            return new(false, LdapError.DomainNotAllowed);
-
         TechnicalUser tu = _config.TechnicalUser;
 
         string host = tu.GetHost();
@@ -21,13 +30,13 @@ public class LdapClient(LdapConfig config, ILogger<LdapClient> logger) : ILdapCl
 
         try
         {
-            using var connection = new LdapConnection { SecureSocketLayer = false };
+            using ILdapConnection connection = _connectionFactory();
 
             await connection.ConnectAsync(host, LdapConnection.DefaultPort);
             await connection.BindAsync(bindDn, bindPassword);
 
             ILdapSearchResults results = await connection.SearchAsync(
-                baseDn,
+                string.Join(",", passport.Domain.Split('.').Select(p => $"dc={p}")),
                 LdapConnection.ScopeSub,
                 searchFilter,
                 null,

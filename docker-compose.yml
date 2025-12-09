@@ -11,11 +11,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
+      - Cors__AllowedOrigins=${Cors__AllowedOrigins}
+      - Swagger__AllowedUsernames=${Swagger__AllowedUsernames}
       - Ldap__TechnicalUsername=${Ldap__TechnicalUsername}
       - Ldap__TechnicalDomain=${Ldap__TechnicalDomain}
       - Ldap__TechnicalPassword=${Ldap__TechnicalPassword}
-      - Ldap__AllowedDomains=${Ldap__AllowedDomains}
       - Ldap__AllowedEmeaOfficeNames=${Ldap__AllowedEmeaOfficeNames}
+      - AzureAd__TenantId=${AzureAd__TenantId}
+      - AzureAd__ClientId=${AzureAd__ClientId}
+      - AzureAd__Issuer=${AzureAd__Issuer}
     depends_on:
       - authpostgres
 

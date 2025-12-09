@@ -13,8 +13,6 @@ public class TechnicalUser(string username, string domain, string password)
 
     public string GetBindDn()
     {
-        // List<string> dc = Domain.Split('.', StringSplitOptions.RemoveEmptyEntries).ToList();
-        // return $"CN={Username},DC={dc[0]},DC={dc[1]}";
         return $"{Username}@{Domain}";
     }
 

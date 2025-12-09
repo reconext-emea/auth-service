@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+
+    "declaration": true,
+    "emitDeclarationOnly": false,
+
+    "outDir": "./frontend-types/dist",
+    "declarationDir": "./frontend-types/dist",
+
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["./frontend-types/src"]
+}
