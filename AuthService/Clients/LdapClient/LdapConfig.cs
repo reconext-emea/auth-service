@@ -2,7 +2,6 @@ namespace AuthService.Clients.LdapClient;
 
 public class LdapConfig(IConfiguration config)
 {
-    public Dictionary<string, string> AllowedDomains { get; } = GetAllowedDomains(config);
     public List<string> AllowedEmeaOfficeNames { get; } = GetAllowedEmeaOfficeNames(config);
 
     public TechnicalUser TechnicalUser { get; } =
@@ -11,16 +10,6 @@ public class LdapConfig(IConfiguration config)
             RequireEnv(config, "Ldap", "TechnicalDomain"),
             RequireEnv(config, "Ldap", "TechnicalPassword")
         );
-
-    private static Dictionary<string, string> GetAllowedDomains(IConfiguration config)
-    {
-        string value = RequireEnv(config, "Ldap", "AllowedDomains");
-        IEnumerable<string> enumerableValue = ToEnumerable(value);
-        return enumerableValue.ToDictionary(
-            domain => domain,
-            domain => string.Join(",", domain.Split('.').Select(p => $"dc={p}"))
-        );
-    }
 
     private static List<string> GetAllowedEmeaOfficeNames(IConfiguration config)
     {
@@ -43,7 +32,7 @@ public class LdapConfig(IConfiguration config)
     {
         return value
             .Split("::", StringSplitOptions.RemoveEmptyEntries)
-            .Select(domain => domain.Trim())
-            .Where(domain => domain.Length > 0);
+            .Select(el => el.Trim())
+            .Where(el => el.Length > 0);
     }
 }

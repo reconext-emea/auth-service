@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using AuthService.Clients.LdapClient;
 using AuthService.Models;
 using Microsoft.AspNetCore.Identity;
@@ -9,11 +8,15 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace AuthService.Services.OpenIddict;
 
-public class PasswordGrantHandler(LdapClient ldap, UserManager<AuthServiceUser> userManager)
-    : IOpenIddictServerHandler<OpenIddictServerEvents.HandleTokenRequestContext>
+public class PasswordGrantHandler(
+    ILdapClient ldap,
+    UserManager<AuthServiceUser> userManager,
+    IClaimsPrincipalFactory claimsFactory
+) : IOpenIddictServerHandler<OpenIddictServerEvents.HandleTokenRequestContext>
 {
-    private readonly LdapClient _ldap = ldap;
+    private readonly ILdapClient _ldap = ldap;
     private readonly UserManager<AuthServiceUser> _userManager = userManager;
+    private readonly IClaimsPrincipalFactory _claimsFactory = claimsFactory;
 
     public async ValueTask HandleAsync(OpenIddictServerEvents.HandleTokenRequestContext context)
     {
@@ -23,7 +26,7 @@ public class PasswordGrantHandler(LdapClient ldap, UserManager<AuthServiceUser> 
         // Extract values
         string? username = context.Request.Username;
         string? password = context.Request.Password;
-        string? domain = context.Request.GetParameter("domain")?.ToString();
+        // string? domain = context.Request.GetParameter("domain")?.ToString();
 
         // ---- Input validation ----
         if (string.IsNullOrWhiteSpace(username))
@@ -38,13 +41,13 @@ public class PasswordGrantHandler(LdapClient ldap, UserManager<AuthServiceUser> 
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(domain))
-        {
-            context.Reject(Errors.InvalidRequest, "Domain is required.");
-            return;
-        }
+        // if (string.IsNullOrWhiteSpace(domain))
+        // {
+        //     context.Reject(Errors.InvalidRequest, "Domain is required.");
+        //     return;
+        // }
 
-        var passport = new UserPassport(username, domain, password);
+        var passport = new UserPassport(username, "reconext.com", password);
         LdapAuthenticateAsyncResult authResult = await _ldap.AuthenticateAsync(passport);
 
         if (!authResult.Success || authResult.User is null)
@@ -78,56 +81,13 @@ public class PasswordGrantHandler(LdapClient ldap, UserManager<AuthServiceUser> 
             await _userManager.UpdateAsync(user);
         }
 
-        var identity = new ClaimsIdentity("Bearer");
-
-        identity.AddClaim(
-            new Claim("sub", user.Id).SetDestinations(
-                Destinations.AccessToken,
-                Destinations.IdentityToken
-            )
-        );
-
-        identity.AddClaim(
-            new Claim("sub_username", user.UserName ?? "").SetDestinations(
-                Destinations.AccessToken,
-                Destinations.IdentityToken
-            )
-        );
-
-        identity.AddClaim(
-            new Claim("sub_email", user.Email ?? "").SetDestinations(
-                Destinations.AccessToken,
-                Destinations.IdentityToken
-            )
-        );
-
-        identity.AddClaim(
-            new Claim("sub_office_location", user.OfficeLocation ?? "").SetDestinations(
-                Destinations.AccessToken,
-                Destinations.IdentityToken
-            )
-        );
-
-        identity.AddClaim(
-            new Claim("sub_display_username", user.DisplayName ?? "").SetDestinations(
-                Destinations.IdentityToken
-            )
-        );
-
-        var principal = new ClaimsPrincipal(identity);
-        principal.SetScopes(context.Request.GetScopes());
-
-        context.Principal = principal;
+        context.Principal = _claimsFactory.Create(user, context.Request.GetScopes());
     }
 
     private static (string error, string description) TranslateLdapError(LdapError? ldapError)
     {
         return ldapError switch
         {
-            LdapError.DomainNotAllowed => (
-                Errors.InvalidRequest,
-                "The specified domain is not allowed."
-            ),
             LdapError.UserNotFound => (Errors.InvalidGrant, "User not found in LDAP directory."),
             LdapError.OfficeNotAllowed => (
                 Errors.InvalidGrant,

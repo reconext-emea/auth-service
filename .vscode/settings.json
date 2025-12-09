@@ -7,12 +7,16 @@
     "authpgadmindata",
     "authpostgres",
     "authpostgresdata",
+    "azureblobstorage",
     "Emea",
     "Entra",
     "Iddict",
+    "intranetapi",
     "Npgsql",
     "pgadmin",
     "reconext",
-    "Swashbuckle"
+    "Swashbuckle",
+    "unassignation",
+    "Unassignment"
   ]
 }

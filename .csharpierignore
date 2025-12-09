@@ -1,2 +1,4 @@
 AuthService/Migrations/
 AuthService/AuthService.csproj
+
+AuthService.Tests/AuthService.csproj
