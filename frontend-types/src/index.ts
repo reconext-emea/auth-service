@@ -1,7 +1,8 @@
-import {
-  BrowserAuthOptions,
-  PublicClientApplication,
-} from "../../node_modules/@azure/msal-browser/dist/index";
+// import {
+//   BrowserAuthOptions,
+//   PublicClientApplication,
+// } from "../../node_modules/@azure/msal-browser/dist/index";
+import { BrowserAuthOptions, PublicClientApplication } from "@azure/msal-browser";
 
 export namespace AuthService {
   /**

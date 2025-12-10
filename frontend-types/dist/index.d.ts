@@ -1,4 +1,4 @@
-import { BrowserAuthOptions } from "../../node_modules/@azure/msal-browser/dist/index";
+import { BrowserAuthOptions } from "@azure/msal-browser";
 export declare namespace AuthService {
     /**
      * Response returned from `/connect/token`.
