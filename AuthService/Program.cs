@@ -91,7 +91,7 @@ services
 
         options.AcceptAnonymousClients();
 
-        options.RegisterScopes(Scopes.OpenId, Scopes.OfflineAccess, "intranetapi");
+        options.RegisterScopes(Scopes.OpenId, Scopes.OfflineAccess);
 
         options.DisableAccessTokenEncryption();
 
@@ -99,7 +99,7 @@ services
         {
             options.UseAspNetCore().DisableTransportSecurityRequirement(); // for HTTP localhost
 
-            options.AddDevelopmentEncryptionCertificate().AddDevelopmentSigningCertificate();
+            // options.AddDevelopmentEncryptionCertificate().AddDevelopmentSigningCertificate();
         }
         else
         {
