@@ -227,7 +227,7 @@ export namespace AuthService {
       "https://login.microsoftonline.com/7e8ee4aa-dcc0-4745-ad28-2f942848ac88/v2.0";
     private static readonly TEST_REDIRECT_URI = "http://localhost";
     private static readonly TEST_POST_LOGOUT_REDIRECT_URI = "http://localhost";
-    private static readonly AUTH_SCOPES: string[] = ["openid", "offline_access", "roles"];
+    private static readonly AUTH_SCOPES: string[] = ["openid", "offline_access"];
 
     private endpoint!: string;
 
