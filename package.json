@@ -10,10 +10,10 @@
   "dependencies": {
     "@azure/msal-browser": "^4.27.0"
   },
-  "scripts": {
-    "build:frontend": "tsc"
-  },
   "devDependencies": {
     "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build:frontend": "tsc"
   }
 }

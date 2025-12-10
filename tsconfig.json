@@ -3,6 +3,8 @@
     "target": "ES2020",
     "module": "ESNext",
 
+    "moduleResolution": "Node",
+
     "declaration": true,
     "emitDeclarationOnly": false,
 
@@ -11,7 +13,9 @@
 
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "isolatedModules": false
   },
   "include": ["./frontend-types/src"]
 }
