@@ -11,6 +11,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection}
+      - SigningCert__Base64=${SigningCert__Base64}
+      - SigningCert__Password=${SigningCert__Password}
+      - EncryptCert__Base64=${EncryptCert__Base64}
+      - EncryptCert__Password=${EncryptCert__Password}
       - Cors__AllowedOrigins=${Cors__AllowedOrigins}
       - Swagger__AllowedUsernames=${Swagger__AllowedUsernames}
       - Ldap__TechnicalUsername=${Ldap__TechnicalUsername}

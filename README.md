@@ -18,6 +18,23 @@ It provides:
 
 - Token issuing and refreshing (OpenIddict)
 
+## OpenIddict Configuration & JWT Validation Guide
+
+### OpenIddict Discovery Endpoints
+
+OpenIddict automatically exposes a **well-known OpenID Connect discovery document**.  
+This document contains all public endpoints, signing keys (JWKS), and metadata required by clients.
+
+**Development Environment**
+
+http://localhost:5081/.well-known/openid-configuration
+
+**Production Environment**
+
+https://10.41.0.85:5081/.well-known/openid-configuration
+
+These endpoints expose the public RSA keys used to verify JWT signatures.
+
 ## Frontend Types
 
 To install the TypeScript types exposed by this service, run:
@@ -493,15 +510,19 @@ import { AuthService } from "@reconext/auth-service-frontend-types";
 
 const jwtAxios = axios.create();
 
+const authStore = useAuthStore();
+
 // Attach access token before each request
 jwtAxios.interceptors.request.use(
   (config) => {
-    const authorizationStore = useAuthorizationStore();
-    const accessToken = authorizationStore.getAccessToken();
+    const accessToken = authStore.getToken("access_token");
 
     if (accessToken) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${accessToken}`;
+      if (typeof config.headers.set === "function") {
+        config.headers.set("Authorization", `Bearer ${accessToken}`);
+      } else {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
     }
 
     return config;
@@ -511,20 +532,18 @@ jwtAxios.interceptors.request.use(
   }
 );
 
-// Automatically refresh on 401 responses
 jwtAxios.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status !== 401) return Promise.reject(error);
 
     try {
-      const authorizationStore = useAuthorizationStore();
-      const client = authorizationStore.getClient();
-      const refreshToken = authorizationStore.getRefreshToken();
+      const client = authStore.getClient();
+      const refreshToken = authStore.getToken("refresh_token");
 
       // No refresh token → go to login
-      if (!refreshToken) {
-        router.push("/login");
+      if (!refreshToken || typeof refreshToken !== "string") {
+        router.push({ path: `/` });
         return Promise.reject(error);
       }
 
@@ -534,22 +553,28 @@ jwtAxios.interceptors.response.use(
       if (client.isAuthError(response)) {
         // Refresh token invalid → user must log in again
         await client.saveErrorAsync(response);
-        authorizationStore.clear();
-        router.push("/login");
+        authStore.clearConnectTokenResponse();
+        router.push({ path: `/` });
         return Promise.reject(error);
       }
 
       // Update stored tokens
-      authorizationStore.newConnectTokenResponse(response);
+      authStore.newConnectTokenResponse(response);
 
       // Retry original request with updated access token
-      const accessToken = authorizationStore.getAccessToken();
-      error.config.headers.Authorization = `Bearer ${accessToken}`;
+      const accessToken = authStore.getToken("access_token");
+
+      if (typeof error.config.headers.set === "function") {
+        error.config.headers.set("Authorization", `Bearer ${accessToken}`);
+      } else {
+        error.config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+
       return jwtAxios.request(error.config);
     } catch (ex) {
       // Unable to refresh → force login
-      useAuthorizationStore().clear();
-      router.push("/login");
+      authStore.clearConnectTokenResponse();
+      router.push({ path: `/` });
       return Promise.reject(ex);
     }
   }

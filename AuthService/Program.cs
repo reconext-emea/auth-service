@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using AuthService.Clients.EntraIdClient;
 using AuthService.Clients.LdapClient;
 using AuthService.Data;
@@ -32,7 +33,8 @@ services.AddScoped<ILdapClient>(sp =>
     var ldapConfig = sp.GetRequiredService<LdapConfig>();
     return new LdapClient(ldapConfig);
 });
-services.AddSingleton<IClaimsPrincipalFactory, ClaimsPrincipalFactory>();
+
+services.AddScoped<IClaimsPrincipalFactory, ClaimsPrincipalFactory>();
 services.AddScoped<PasswordGrantHandler>();
 
 services.AddSingleton(sp =>
@@ -93,20 +95,54 @@ services
 
         options.RegisterScopes(Scopes.OpenId, Scopes.OfflineAccess);
 
+        options.RegisterClaims([
+            "username",
+            "email",
+            "office_location",
+            "display_username",
+            Claims.Role,
+            "permission",
+            "app_settings",
+        ]);
+
         options.DisableAccessTokenEncryption();
 
         if (builder.Environment.IsDevelopment())
         {
-            options.UseAspNetCore().DisableTransportSecurityRequirement(); // for HTTP localhost
+            options.UseAspNetCore().DisableTransportSecurityRequirement();
 
-            // options.AddDevelopmentEncryptionCertificate().AddDevelopmentSigningCertificate();
+            options.AddDevelopmentEncryptionCertificate();
+            options.AddDevelopmentSigningCertificate();
         }
         else
         {
             options.UseAspNetCore();
 
-            // options.AddEncryptionCertificate(...);
-            // options.AddSigningCertificate(...);
+            var signingBase64 = config.GetSection("SigningCert")["Base64"];
+            var signingPassword = config.GetSection("SigningCert")["Password"];
+
+            var encryptBase64 = config.GetSection("EncryptCert")["Base64"];
+            var encryptPassword = config.GetSection("EncryptCert")["Password"];
+
+            if (string.IsNullOrWhiteSpace(signingBase64))
+                throw new InvalidOperationException("Signing certificate Base64 is missing.");
+
+            if (string.IsNullOrWhiteSpace(signingPassword))
+                throw new InvalidOperationException("Signing certificate password is missing.");
+
+            if (string.IsNullOrWhiteSpace(encryptBase64))
+                throw new InvalidOperationException("Encryption certificate Base64 is missing.");
+
+            if (string.IsNullOrWhiteSpace(encryptPassword))
+                throw new InvalidOperationException("Encryption certificate password is missing.");
+
+            options.AddSigningCertificate(
+                new X509Certificate2(Convert.FromBase64String(signingBase64), signingPassword)
+            );
+
+            options.AddEncryptionCertificate(
+                new X509Certificate2(Convert.FromBase64String(encryptBase64), encryptPassword)
+            );
         }
 
         options.AddEventHandler<OpenIddictServerEvents.HandleTokenRequestContext>(builder =>

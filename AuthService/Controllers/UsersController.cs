@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AuthService.Constants;
 using AuthService.Data;
 using AuthService.Models;
@@ -12,10 +13,15 @@ namespace AuthService.Controllers;
 [ApiController]
 [ApiExplorerSettings(GroupName = "users")]
 [Route("api/users")]
-public class UsersController(UserManager<AuthServiceUser> userManager, AuthServiceDbContext db)
-    : ControllerBase
+public class UsersController(
+    UserManager<AuthServiceUser> userManager,
+    RoleManager<IdentityRole> roleManager,
+    AuthServiceDbContext db
+) : ControllerBase
 {
     private readonly UserManager<AuthServiceUser> _userManager = userManager;
+
+    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly AuthServiceDbContext _db = db;
 
     // --------------------------------------------------------------
@@ -132,21 +138,154 @@ public class UsersController(UserManager<AuthServiceUser> userManager, AuthServi
     }
 
     // --------------------------------------------------------------
-    // Helper Methods
+    // Get User Claims
     // --------------------------------------------------------------
-    // private async Task<AuthServiceUser?> FindUser(string input)
-    // {
-    //     // Try by Id
-    //     var user = await _userManager.FindByIdAsync(input);
-    //     if (user != null)
-    //         return user;
+    [HttpGet("one/{userIdentifier}/claims")]
+    public async Task<ActionResult<GetUserClaimsResponseDto>> GetUserClaims(string userIdentifier)
+    {
+        AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
+            u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        );
 
-    //     // Try by UserName
-    //     user = await _userManager.FindByNameAsync(input);
-    //     if (user != null)
-    //         return user;
+        if (user == null)
+            return NotFound(
+                new UsersErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
+            );
 
-    //     // Try by Email
-    //     return await _userManager.FindByEmailAsync(input);
-    // }
+        var userClaims = await _userManager.GetClaimsAsync(user);
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        var roleClaims = new List<Claim>();
+
+        foreach (var roleName in roles)
+        {
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role == null)
+                continue;
+
+            var claims = await _roleManager.GetClaimsAsync(role);
+            roleClaims.AddRange(claims);
+        }
+
+        return Ok(
+            new GetUserClaimsResponseDto
+            {
+                UserIdentifier = userIdentifier,
+                UserClaims = [.. userClaims.Select(c => c.Value)],
+                RoleClaims = [.. roleClaims.Select(c => c.Value)],
+            }
+        );
+    }
+
+    // --------------------------------------------------------------
+    // Delete Claim From User
+    // --------------------------------------------------------------
+    [HttpDelete("one/{userIdentifier}/claims/${claimValue}")]
+    public async Task<ActionResult<DeleteClaimFromUserResponseDto>> DeleteClaimFromUser(
+        string userIdentifier,
+        string claimValue
+    )
+    {
+        AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
+            u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        );
+
+        if (user == null)
+            return NotFound(
+                new UsersErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
+            );
+
+        // Find the claim by value
+        var claims = await _userManager.GetClaimsAsync(user);
+        var claimToRemove = claims.FirstOrDefault(c =>
+            c.Type == "permission" && c.Value == claimValue
+        );
+
+        if (claimToRemove == null)
+            return NotFound(
+                new UsersErrorResponseDto
+                {
+                    Error = $"Claim '{claimValue}' not found for user '{userIdentifier}'.",
+                }
+            );
+
+        var result = await _userManager.RemoveClaimAsync(user, claimToRemove);
+
+        if (!result.Succeeded)
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new RolesErrorResponseDto
+                {
+                    Error = "Failed to remove claim.",
+                    Details = string.Join(", ", result.Errors.Select(e => e.Description)),
+                }
+            );
+
+        return Ok(
+            new DeleteClaimFromUserResponseDto
+            {
+                UserIdentifier = userIdentifier,
+                UserClaim = claimValue,
+                Message = "Claim removed successfully.",
+            }
+        );
+    }
+
+    // --------------------------------------------------------------
+    // Add Claim to User
+    // --------------------------------------------------------------
+    [HttpPost("one/claims")]
+    public async Task<ActionResult<AddClaimToUserDtoResponseDto>> AddClaimToUser(
+        [FromBody] AddClaimToUserDto dto
+    )
+    {
+        AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
+            u.Id == dto.UserIdentifier
+            || u.UserName == dto.UserIdentifier
+            || u.Email == dto.UserIdentifier
+        );
+
+        if (user == null)
+            return NotFound(
+                new UsersErrorResponseDto { Error = $"User '{dto.UserIdentifier}' not found." }
+            );
+
+        var claimValue = $"user.{dto.Tool.ToLower()}.{dto.Privilege.ToLower()}";
+
+        var existingClaims = await _userManager.GetClaimsAsync(user);
+        if (existingClaims.Any(c => c.Type == "permission" && c.Value == claimValue))
+        {
+            return BadRequest(
+                new UsersErrorResponseDto
+                {
+                    Error = "User already has this claim.",
+                    Details = claimValue,
+                }
+            );
+        }
+
+        var claim = new Claim("permission", claimValue);
+
+        var result = await _userManager.AddClaimAsync(user, claim);
+
+        if (!result.Succeeded)
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new RolesErrorResponseDto
+                {
+                    Error = "Failed to add claim.",
+                    Details = string.Join(", ", result.Errors.Select(e => e.Description)),
+                }
+            );
+
+        return Ok(
+            new AddClaimToUserDtoResponseDto
+            {
+                UserIdentifier = dto.UserIdentifier,
+                Claim = claim.Value,
+                Message = "Claim added successfully.",
+            }
+        );
+    }
 }
