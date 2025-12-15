@@ -72,30 +72,25 @@ public class RolesController(
     [HttpPost]
     public async Task<ActionResult<CreateRoleResponseDto>> CreateRole([FromBody] CreateRoleDto dto)
     {
-        // Validate format: Tool.Access
-        if (!RoleNameValidator.IsValid(dto.RoleName))
+        var RoleName = $"{dto.Tool}.{dto.Access}";
+
+        if (!RoleNameValidator.IsValid(RoleName))
             return BadRequest(
-                new RolesErrorResponseDto
-                {
-                    Error = "Invalid role format. Expected Tool.AccessLevel",
-                }
+                new RolesErrorResponseDto { Error = "Invalid role format. Expected Tool.Access" }
             );
 
-        // Parse segments
-        var (tool, access) = RoleNameParser.Parse(dto.RoleName);
-
         // Validate access level
-        if (!RoleAccessLevel.IsValid(access))
+        if (!RoleAccessLevel.IsValid(dto.Access))
             return BadRequest(
-                new RolesErrorResponseDto { Error = $"Unknown access level: {access}" }
+                new RolesErrorResponseDto { Error = $"Unknown access level: {dto.Access}" }
             );
 
         // Check if role exists
-        if (await _roleManager.RoleExistsAsync(dto.RoleName))
+        if (await _roleManager.RoleExistsAsync(RoleName))
             return Conflict(new RolesErrorResponseDto { Error = "Role already exists" });
 
         // Create role
-        var role = new IdentityRole(dto.RoleName);
+        var role = new IdentityRole(RoleName);
         var result = await _roleManager.CreateAsync(role);
 
         if (!result.Succeeded)
@@ -109,7 +104,7 @@ public class RolesController(
             );
 
         // Resolve permissions
-        var permissions = PermissionMap.ResolvePermissions(tool, access);
+        var permissions = PermissionMap.ResolvePermissions(dto.Tool, dto.Access);
 
         // Add claims
         foreach (var perm in permissions)

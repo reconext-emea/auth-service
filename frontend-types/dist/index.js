@@ -1,8 +1,75 @@
-// import {
-//   BrowserAuthOptions,
-//   PublicClientApplication,
-// } from "../../node_modules/@azure/msal-browser/dist/index";
 import { PublicClientApplication } from "@azure/msal-browser";
+var Common;
+(function (Common) {
+    class Client {
+        static async fetch(input, init) {
+            const response = await fetch(input, init);
+            const authResponse = response;
+            authResponse.json = response.json.bind(response);
+            return authResponse;
+        }
+    }
+    Common.Client = Client;
+})(Common || (Common = {}));
+export var UsersService;
+(function (UsersService) {
+    class UsersClient extends Common.Client {
+        getBaseUrl(development) {
+            return `${development ? UsersClient.DEVELOPMENT_ORIGIN : UsersClient.ORIGIN}`;
+        }
+        constructor(environment = "Development") {
+            super();
+            this.baseUrl = this.getBaseUrl(environment === "Development");
+        }
+        async getMany(includeSettings) {
+            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/many/${!!includeSettings}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+            });
+            return clientResponse.json();
+        }
+        async getOne(userIdentifier, includeSettings) {
+            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/one/${userIdentifier}/${!!includeSettings}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+            });
+            return clientResponse.json();
+        }
+        async putSettings(userIdentifier, userSettings) {
+            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/one/${userIdentifier}/settings`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(userSettings),
+            });
+            return clientResponse.json();
+        }
+        async getClaims(userIdentifier) {
+            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/one/${userIdentifier}/claims`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+            });
+            return clientResponse.json();
+        }
+        async deleteUserClaim(userIdentifier, userClaimValue) {
+            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/one/${userIdentifier}/claims/${userClaimValue}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+            });
+            return clientResponse.json();
+        }
+        async postUserClaim(userIdentifier, userClaim) {
+            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/one/${userIdentifier}/settings`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(userClaim),
+            });
+            return clientResponse.json();
+        }
+    }
+    UsersClient.ORIGIN = "https://10.41.0.85:5081";
+    UsersClient.DEVELOPMENT_ORIGIN = "http://localhost:5081";
+    UsersService.UsersClient = UsersClient;
+})(UsersService || (UsersService = {}));
 export var AuthService;
 (function (AuthService) {
     /**
@@ -49,15 +116,7 @@ export var AuthService;
             await this.instance.logoutPopup();
         }
     }
-    class AuthClient {
-        static async fetch(input, init) {
-            const response = await fetch(input, init);
-            const authResponse = response;
-            authResponse.json = response.json.bind(response);
-            return authResponse;
-        }
-    }
-    class BydIntranetClient extends AuthClient {
+    class AuthIntranetClient extends Common.Client {
         constructor() {
             super();
             this.initialized = null;
@@ -88,20 +147,20 @@ export var AuthService;
          * @throws {Error} If required MSAL configuration values are missing for the selected environment.
          */
         static create(msalConfig) {
-            const client = new BydIntranetClient();
+            const client = new AuthIntranetClient();
             client.endpoint =
-                msalConfig !== null ? BydIntranetClient.ENDPOINT : BydIntranetClient.TEST_ENDPOINT;
+                msalConfig !== null ? AuthIntranetClient.ORIGIN : AuthIntranetClient.TEST_ORIGIN;
             client.msal = new MsalBrowser({
-                authority: BydIntranetClient.AUTHORITY,
-                clientId: BydIntranetClient.CLIENT_ID,
+                authority: AuthIntranetClient.AUTHORITY,
+                clientId: AuthIntranetClient.CLIENT_ID,
                 ...(msalConfig
                     ? {
                         ...msalConfig,
                     }
                     : {
-                        clientId: BydIntranetClient.TEST_CLIENT_ID,
-                        redirectUri: BydIntranetClient.TEST_REDIRECT_URI,
-                        postLogoutRedirectUri: BydIntranetClient.TEST_POST_LOGOUT_REDIRECT_URI,
+                        clientId: AuthIntranetClient.TEST_CLIENT_ID,
+                        redirectUri: AuthIntranetClient.TEST_REDIRECT_URI,
+                        postLogoutRedirectUri: AuthIntranetClient.TEST_POST_LOGOUT_REDIRECT_URI,
                     }),
             });
             return client;
@@ -141,9 +200,9 @@ export var AuthService;
                 grant_type: "urn:entra:access_token",
                 access_token: accessToken,
                 graph_token: graphToken,
-                scope: [...BydIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
+                scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
             });
-            const clientResponse = await BydIntranetClient.fetch(`${this.endpoint}/connect/token`, {
+            const clientResponse = await AuthIntranetClient.fetch(`${this.endpoint}/connect/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString(),
@@ -191,9 +250,9 @@ export var AuthService;
                 username,
                 password,
                 domain: "reconext.com",
-                scope: [...BydIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
+                scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
             });
-            const clientResponse = await BydIntranetClient.fetch(`${this.endpoint}/connect/token`, {
+            const clientResponse = await AuthIntranetClient.fetch(`${this.endpoint}/connect/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString(),
@@ -269,9 +328,9 @@ export var AuthService;
             const params = new URLSearchParams({
                 grant_type: "refresh_token",
                 refresh_token: refreshToken,
-                scope: [...BydIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
+                scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
             });
-            const clientResponse = await BydIntranetClient.fetch(`${this.endpoint}/connect/token`, {
+            const clientResponse = await AuthIntranetClient.fetch(`${this.endpoint}/connect/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString(),
@@ -300,13 +359,13 @@ export var AuthService;
             }
         }
     }
-    BydIntranetClient.ENDPOINT = "https://10.41.0.85:5081";
-    BydIntranetClient.TEST_ENDPOINT = "http://localhost:5081";
-    BydIntranetClient.CLIENT_ID = "2d4d603d-f0bc-4727-9b23-40b08c2e6e63";
-    BydIntranetClient.TEST_CLIENT_ID = "e05b3070-b0d6-4cd0-b76c-16a46b820bd4";
-    BydIntranetClient.AUTHORITY = "https://login.microsoftonline.com/7e8ee4aa-dcc0-4745-ad28-2f942848ac88/v2.0";
-    BydIntranetClient.TEST_REDIRECT_URI = "http://localhost";
-    BydIntranetClient.TEST_POST_LOGOUT_REDIRECT_URI = "http://localhost";
-    BydIntranetClient.AUTH_SCOPES = ["openid", "offline_access"];
-    AuthService.BydIntranetClient = BydIntranetClient;
+    AuthIntranetClient.ORIGIN = "https://10.41.0.85:5081";
+    AuthIntranetClient.TEST_ORIGIN = "http://localhost:5081";
+    AuthIntranetClient.CLIENT_ID = "2d4d603d-f0bc-4727-9b23-40b08c2e6e63";
+    AuthIntranetClient.TEST_CLIENT_ID = "e05b3070-b0d6-4cd0-b76c-16a46b820bd4";
+    AuthIntranetClient.AUTHORITY = "https://login.microsoftonline.com/7e8ee4aa-dcc0-4745-ad28-2f942848ac88/v2.0";
+    AuthIntranetClient.TEST_REDIRECT_URI = "http://localhost";
+    AuthIntranetClient.TEST_POST_LOGOUT_REDIRECT_URI = "http://localhost";
+    AuthIntranetClient.AUTH_SCOPES = ["openid", "offline_access"];
+    AuthService.AuthIntranetClient = AuthIntranetClient;
 })(AuthService || (AuthService = {}));

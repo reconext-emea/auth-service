@@ -1,4 +1,87 @@
 import { BrowserAuthOptions } from "@azure/msal-browser";
+declare namespace Common {
+    interface ClientResponse<T> extends Response {
+        json(): Promise<T>;
+    }
+    class Client {
+        protected static fetch<T>(input: string | Request | URL, init?: RequestInit | undefined): Promise<ClientResponse<T>>;
+    }
+}
+export declare namespace UsersService {
+    /**
+     * List of allowed emea office locations, based on environmental variable: Ldap__AllowedEmeaOfficeNames.
+     *
+     * **Supposed to be adjusted accordingly to changes.**
+     */
+    type OfficeLocation = "Bydgoszcz Site (PL)" | "Havant Site (UK)" | "Prague Site (CZ)" | "REMOTE / HOME OFFICE" | "Tallinn Site (EE)" | "Zoetermeer Site (NL)";
+    /**
+     * List of allowed preferred language codes, based on: AuthService.Constants.PreferredLanguage.
+     *
+     * **Supposed to be adjusted accordingly to changes.**
+     */
+    type PreferredLanguageCode = "en" | "pl" | "ua" | "cs";
+    /**
+     * List of allowed preferred language codes, based on: AuthService.Constants.ColorTheme.
+     *
+     * **Supposed to be adjusted accordingly to changes.**
+     */
+    type ColorThemeCode = "light" | "dark";
+    interface ISettings {
+        preferredLanguageCode: PreferredLanguageCode;
+        colorThemeCode: ColorThemeCode;
+    }
+    type PutSettings = ISettings;
+    type UserSettings<WithSettings> = WithSettings extends true ? ISettings : null;
+    /**
+     * Id (e.g., **123e4567-e89b-12d3-a456-426614174000**)
+     *
+     * Username (e.g., **marian.pazdzioch**)
+     *
+     * Email (e.g., **marian.pazdzioch@reconext.com**)
+     *
+     * Display Name (e.g., **Marian Pazdzioch**)
+     */
+    interface IUser<WithSettings> {
+        id: string;
+        userName: string;
+        email: string;
+        displayName: string;
+        officeLocation: OfficeLocation;
+        appSettings: UserSettings<WithSettings>;
+    }
+    type UserClaims = string[];
+    type RoleClaims = string[];
+    interface IClaims {
+        userClaims: UserClaims;
+        roleClaims: RoleClaims;
+    }
+    type GetManyResponse<WithSettings> = IUser<WithSettings>[];
+    type GetOneResponse<WithSettings> = IUser<WithSettings>;
+    interface IMessage {
+        message: string;
+    }
+    type PutSettingsResponse = IMessage;
+    type GetClaimsResponse = IClaims;
+    type DeleteClaimResponse = IMessage;
+    type PostUserClaim = {
+        tool: string;
+        privilege: string;
+    };
+    type PostUserClaimResponse = IMessage;
+    class UsersClient extends Common.Client {
+        private static readonly ORIGIN;
+        private static readonly DEVELOPMENT_ORIGIN;
+        private baseUrl;
+        private getBaseUrl;
+        constructor(environment?: "Development" | "Production");
+        getMany<WithSettings extends true | null>(includeSettings: WithSettings): Promise<GetManyResponse<WithSettings>>;
+        getOne<WithSettings extends true | null>(userIdentifier: string, includeSettings: WithSettings): Promise<GetOneResponse<WithSettings>>;
+        putSettings(userIdentifier: string, userSettings: PutSettings): Promise<PutSettingsResponse>;
+        getClaims(userIdentifier: string): Promise<GetClaimsResponse>;
+        deleteUserClaim(userIdentifier: string, userClaimValue: string): Promise<DeleteClaimResponse>;
+        postUserClaim(userIdentifier: string, userClaim: PostUserClaim): Promise<PostUserClaimResponse>;
+    }
+}
 export declare namespace AuthService {
     /**
      * Response returned from `/connect/token`.
@@ -119,15 +202,9 @@ export declare namespace AuthService {
         msalLogin(): Promise<IConnectTokenResponse | void>;
         msalLogout(): Promise<void>;
     }
-    interface AuthResponse<T> extends Response {
-        json(): Promise<T>;
-    }
-    class AuthClient {
-        protected static fetch<T>(input: string | Request | URL, init?: RequestInit | undefined): Promise<AuthResponse<T>>;
-    }
-    export class BydIntranetClient extends AuthClient implements IIntranetMsalClient {
-        private static readonly ENDPOINT;
-        private static readonly TEST_ENDPOINT;
+    export class AuthIntranetClient extends Common.Client implements IIntranetMsalClient {
+        private static readonly ORIGIN;
+        private static readonly TEST_ORIGIN;
         private static readonly CLIENT_ID;
         private static readonly TEST_CLIENT_ID;
         private static readonly AUTHORITY;
@@ -163,7 +240,7 @@ export declare namespace AuthService {
          *
          * @throws {Error} If required MSAL configuration values are missing for the selected environment.
          */
-        static create<T extends Environment.Production | Environment.Development = Environment.Production>(msalConfig: MsalAuthConfig<T>): BydIntranetClient;
+        static create<T extends Environment.Production | Environment.Development = Environment.Production>(msalConfig: MsalAuthConfig<T>): AuthIntranetClient;
         private init;
         /**
          * Performs an interactive MSAL login and exchanges the resulting MSAL access token
@@ -284,3 +361,4 @@ export declare namespace AuthService {
     }
     export {};
 }
+export {};

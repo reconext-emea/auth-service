@@ -146,9 +146,9 @@ public class EntraTokenGrantHandler(
 
         string normalizedName = _userManager.NormalizeName(graphUsername);
 
-        AuthServiceUser? authServiceUser = await _userManager.Users.SingleOrDefaultAsync(u =>
-            u.NormalizedUserName == normalizedName
-        );
+        AuthServiceUser? authServiceUser = await _userManager
+            .Users.Include(u => u.AppSettings)
+            .SingleOrDefaultAsync(u => u.NormalizedUserName == normalizedName);
 
         var graphUser = new GraphUser(graphUsername, graphMail, graphOfficeLocation);
 
@@ -173,6 +173,9 @@ public class EntraTokenGrantHandler(
             await _userManager.UpdateAsync(authServiceUser);
         }
 
-        context.Principal = _claimsFactory.Create(authServiceUser, context.Request.GetScopes());
+        context.Principal = await _claimsFactory.Create(
+            authServiceUser,
+            context.Request.GetScopes()
+        );
     }
 }

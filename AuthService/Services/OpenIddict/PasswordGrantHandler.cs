@@ -60,9 +60,9 @@ public class PasswordGrantHandler(
         LdapUser ldapUser = authResult.User;
 
         string normalizedName = _userManager.NormalizeName(ldapUser.Username);
-        AuthServiceUser? user = await _userManager.Users.SingleOrDefaultAsync(u =>
-            u.NormalizedUserName == normalizedName
-        );
+        AuthServiceUser? user = await _userManager
+            .Users.Include(u => u.AppSettings)
+            .SingleOrDefaultAsync(u => u.NormalizedUserName == normalizedName);
 
         if (user == null)
         {
@@ -81,7 +81,7 @@ public class PasswordGrantHandler(
             await _userManager.UpdateAsync(user);
         }
 
-        context.Principal = _claimsFactory.Create(user, context.Request.GetScopes());
+        context.Principal = await _claimsFactory.Create(user, context.Request.GetScopes());
     }
 
     private static (string error, string description) TranslateLdapError(LdapError? ldapError)

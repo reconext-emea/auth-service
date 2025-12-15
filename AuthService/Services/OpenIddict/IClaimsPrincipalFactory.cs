@@ -5,5 +5,5 @@ namespace AuthService.Services.OpenIddict;
 
 public interface IClaimsPrincipalFactory
 {
-    ClaimsPrincipal Create(AuthServiceUser user, IEnumerable<string> scopes);
+    Task<ClaimsPrincipal> Create(AuthServiceUser user, IEnumerable<string> scopes);
 }
