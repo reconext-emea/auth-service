@@ -128,13 +128,7 @@ public class UsersController(
 
         await _db.SaveChangesAsync();
 
-        return Ok(
-            new UpdateUserSettingsResponseDto
-            {
-                UserIdentifier = userIdentifier,
-                Message = "Settings updated successfully.",
-            }
-        );
+        return Ok(new UpdateUserSettingsResponseDto { Message = "Settings updated successfully." });
     }
 
     // --------------------------------------------------------------
@@ -171,7 +165,6 @@ public class UsersController(
         return Ok(
             new GetUserClaimsResponseDto
             {
-                UserIdentifier = userIdentifier,
                 UserClaims = [.. userClaims.Select(c => c.Value)],
                 RoleClaims = [.. roleClaims.Select(c => c.Value)],
             }
@@ -181,10 +174,10 @@ public class UsersController(
     // --------------------------------------------------------------
     // Delete Claim From User
     // --------------------------------------------------------------
-    [HttpDelete("one/{userIdentifier}/claims/${claimValue}")]
+    [HttpDelete("one/{userIdentifier}/claims/${userClaimValue}")]
     public async Task<ActionResult<DeleteClaimFromUserResponseDto>> DeleteClaimFromUser(
         string userIdentifier,
-        string claimValue
+        string userClaimValue
     )
     {
         AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
@@ -199,14 +192,14 @@ public class UsersController(
         // Find the claim by value
         var claims = await _userManager.GetClaimsAsync(user);
         var claimToRemove = claims.FirstOrDefault(c =>
-            c.Type == "permission" && c.Value == claimValue
+            c.Type == "permission" && c.Value == userClaimValue
         );
 
         if (claimToRemove == null)
             return NotFound(
                 new UsersErrorResponseDto
                 {
-                    Error = $"Claim '{claimValue}' not found for user '{userIdentifier}'.",
+                    Error = $"Claim '{userClaimValue}' not found for user '{userIdentifier}'.",
                 }
             );
 
@@ -223,49 +216,43 @@ public class UsersController(
             );
 
         return Ok(
-            new DeleteClaimFromUserResponseDto
-            {
-                UserIdentifier = userIdentifier,
-                UserClaim = claimValue,
-                Message = "Claim removed successfully.",
-            }
+            new DeleteClaimFromUserResponseDto { Message = "User claim removed successfully." }
         );
     }
 
     // --------------------------------------------------------------
     // Add Claim to User
     // --------------------------------------------------------------
-    [HttpPost("one/claims")]
+    [HttpPost("one/{userIdentifier}/claims")]
     public async Task<ActionResult<AddClaimToUserDtoResponseDto>> AddClaimToUser(
+        string userIdentifier,
         [FromBody] AddClaimToUserDto dto
     )
     {
         AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
-            u.Id == dto.UserIdentifier
-            || u.UserName == dto.UserIdentifier
-            || u.Email == dto.UserIdentifier
+            u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
         );
 
         if (user == null)
             return NotFound(
-                new UsersErrorResponseDto { Error = $"User '{dto.UserIdentifier}' not found." }
+                new UsersErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
             );
 
-        var claimValue = $"user.{dto.Tool.ToLower()}.{dto.Privilege.ToLower()}";
+        var userClaimValue = $"user.{dto.Tool.ToLower()}.{dto.Privilege.ToLower()}";
 
         var existingClaims = await _userManager.GetClaimsAsync(user);
-        if (existingClaims.Any(c => c.Type == "permission" && c.Value == claimValue))
+        if (existingClaims.Any(c => c.Type == "permission" && c.Value == userClaimValue))
         {
             return BadRequest(
                 new UsersErrorResponseDto
                 {
                     Error = "User already has this claim.",
-                    Details = claimValue,
+                    Details = userClaimValue,
                 }
             );
         }
 
-        var claim = new Claim("permission", claimValue);
+        var claim = new Claim("permission", userClaimValue);
 
         var result = await _userManager.AddClaimAsync(user, claim);
 
@@ -279,13 +266,6 @@ public class UsersController(
                 }
             );
 
-        return Ok(
-            new AddClaimToUserDtoResponseDto
-            {
-                UserIdentifier = dto.UserIdentifier,
-                Claim = claim.Value,
-                Message = "Claim added successfully.",
-            }
-        );
+        return Ok(new AddClaimToUserDtoResponseDto { Message = "User claim added successfully." });
     }
 }

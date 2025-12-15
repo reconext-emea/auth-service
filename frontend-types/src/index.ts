@@ -1,8 +1,210 @@
-// import {
-//   BrowserAuthOptions,
-//   PublicClientApplication,
-// } from "../../node_modules/@azure/msal-browser/dist/index";
 import { BrowserAuthOptions, PublicClientApplication } from "@azure/msal-browser";
+
+namespace Common {
+  export interface ClientResponse<T> extends Response {
+    json(): Promise<T>;
+  }
+
+  export class Client {
+    protected static async fetch<T>(
+      input: string | Request | URL,
+      init?: RequestInit | undefined
+    ): Promise<ClientResponse<T>> {
+      const response = await fetch(input, init);
+
+      const authResponse = response as ClientResponse<T>;
+      authResponse.json = response.json.bind(response) as () => Promise<T>;
+
+      return authResponse;
+    }
+  }
+}
+
+export namespace UsersService {
+  /**
+   * List of allowed emea office locations, based on environmental variable: Ldap__AllowedEmeaOfficeNames.
+   *
+   * **Supposed to be adjusted accordingly to changes.**
+   */
+  export type OfficeLocation =
+    | "Bydgoszcz Site (PL)"
+    | "Havant Site (UK)"
+    | "Prague Site (CZ)"
+    | "REMOTE / HOME OFFICE"
+    | "Tallinn Site (EE)"
+    | "Zoetermeer Site (NL)";
+
+  /**
+   * List of allowed preferred language codes, based on: AuthService.Constants.PreferredLanguage.
+   *
+   * **Supposed to be adjusted accordingly to changes.**
+   */
+  export type PreferredLanguageCode = "en" | "pl" | "ua" | "cs";
+  /**
+   * List of allowed preferred language codes, based on: AuthService.Constants.ColorTheme.
+   *
+   * **Supposed to be adjusted accordingly to changes.**
+   */
+  export type ColorThemeCode = "light" | "dark";
+
+  export interface ISettings {
+    preferredLanguageCode: PreferredLanguageCode;
+    colorThemeCode: ColorThemeCode;
+  }
+
+  export type PutSettings = ISettings;
+
+  export type UserSettings<WithSettings> = WithSettings extends true ? ISettings : null;
+
+  /**
+   * Id (e.g., **123e4567-e89b-12d3-a456-426614174000**)
+   *
+   * Username (e.g., **marian.pazdzioch**)
+   *
+   * Email (e.g., **marian.pazdzioch@reconext.com**)
+   *
+   * Display Name (e.g., **Marian Pazdzioch**)
+   */
+  export interface IUser<WithSettings> {
+    id: string;
+    userName: string;
+    email: string;
+    displayName: string;
+    officeLocation: OfficeLocation;
+    appSettings: UserSettings<WithSettings>;
+  }
+
+  export type UserClaims = string[];
+  export type RoleClaims = string[];
+  export interface IClaims {
+    userClaims: UserClaims;
+    roleClaims: RoleClaims;
+  }
+
+  export type GetManyResponse<WithSettings> = IUser<WithSettings>[];
+
+  export type GetOneResponse<WithSettings> = IUser<WithSettings>;
+
+  export interface IMessage {
+    message: string;
+  }
+
+  export type PutSettingsResponse = IMessage;
+
+  export type GetClaimsResponse = IClaims;
+
+  export type DeleteClaimResponse = IMessage;
+
+  export type PostUserClaim = {
+    tool: string;
+    privilege: string;
+  };
+
+  export type PostUserClaimResponse = IMessage;
+
+  export class UsersClient extends Common.Client {
+    private static readonly ORIGIN = "https://10.41.0.85:5081";
+    private static readonly DEVELOPMENT_ORIGIN = "http://localhost:5081";
+
+    private baseUrl: string;
+    private getBaseUrl(development: boolean) {
+      return `${development ? UsersClient.DEVELOPMENT_ORIGIN : UsersClient.ORIGIN}`;
+    }
+
+    constructor(environment: "Development" | "Production" = "Development") {
+      super();
+      this.baseUrl = this.getBaseUrl(environment === "Development");
+    }
+
+    async getMany<WithSettings extends true | null>(
+      includeSettings: WithSettings
+    ): Promise<GetManyResponse<WithSettings>> {
+      const clientResponse: Common.ClientResponse<GetManyResponse<WithSettings>> =
+        await UsersClient.fetch<GetManyResponse<WithSettings>>(
+          `${this.baseUrl}/api/users/many/${!!includeSettings}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json; charset=utf-8" },
+          }
+        );
+      return clientResponse.json();
+    }
+
+    async getOne<WithSettings extends true | null>(
+      userIdentifier: string,
+      includeSettings: WithSettings
+    ): Promise<GetOneResponse<WithSettings>> {
+      const clientResponse: Common.ClientResponse<GetOneResponse<WithSettings>> =
+        await UsersClient.fetch<GetOneResponse<WithSettings>>(
+          `${this.baseUrl}/api/users/one/${userIdentifier}/${!!includeSettings}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json; charset=utf-8" },
+          }
+        );
+      return clientResponse.json();
+    }
+
+    async putSettings(
+      userIdentifier: string,
+      userSettings: PutSettings
+    ): Promise<PutSettingsResponse> {
+      const clientResponse: Common.ClientResponse<PutSettingsResponse> =
+        await UsersClient.fetch<PutSettingsResponse>(
+          `${this.baseUrl}/api/users/one/${userIdentifier}/settings`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json; charset=utf-8" },
+            body: JSON.stringify(userSettings),
+          }
+        );
+      return clientResponse.json();
+    }
+
+    async getClaims(userIdentifier: string): Promise<GetClaimsResponse> {
+      const clientResponse: Common.ClientResponse<GetClaimsResponse> =
+        await UsersClient.fetch<GetClaimsResponse>(
+          `${this.baseUrl}/api/users/one/${userIdentifier}/claims`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json; charset=utf-8" },
+          }
+        );
+      return clientResponse.json();
+    }
+
+    async deleteUserClaim(
+      userIdentifier: string,
+      userClaimValue: string
+    ): Promise<DeleteClaimResponse> {
+      const clientResponse: Common.ClientResponse<DeleteClaimResponse> =
+        await UsersClient.fetch<DeleteClaimResponse>(
+          `${this.baseUrl}/api/users/one/${userIdentifier}/claims/${userClaimValue}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json; charset=utf-8" },
+          }
+        );
+      return clientResponse.json();
+    }
+
+    async postUserClaim(
+      userIdentifier: string,
+      userClaim: PostUserClaim
+    ): Promise<PostUserClaimResponse> {
+      const clientResponse: Common.ClientResponse<PostUserClaimResponse> =
+        await UsersClient.fetch<PostUserClaimResponse>(
+          `${this.baseUrl}/api/users/one/${userIdentifier}/settings`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json; charset=utf-8" },
+            body: JSON.stringify(userClaim),
+          }
+        );
+      return clientResponse.json();
+    }
+  }
+}
 
 export namespace AuthService {
   /**
@@ -198,27 +400,9 @@ export namespace AuthService {
     }
   }
 
-  interface AuthResponse<T> extends Response {
-    json(): Promise<T>;
-  }
-
-  class AuthClient {
-    protected static async fetch<T>(
-      input: string | Request | URL,
-      init?: RequestInit | undefined
-    ): Promise<AuthResponse<T>> {
-      const response = await fetch(input, init);
-
-      const authResponse = response as AuthResponse<T>;
-      authResponse.json = response.json.bind(response) as () => Promise<T>;
-
-      return authResponse;
-    }
-  }
-
-  export class BydIntranetClient extends AuthClient implements IIntranetMsalClient {
-    private static readonly ENDPOINT = "https://10.41.0.85:5081";
-    private static readonly TEST_ENDPOINT = "http://localhost:5081";
+  export class AuthIntranetClient extends Common.Client implements IIntranetMsalClient {
+    private static readonly ORIGIN = "https://10.41.0.85:5081";
+    private static readonly TEST_ORIGIN = "http://localhost:5081";
 
     private static readonly CLIENT_ID = "2d4d603d-f0bc-4727-9b23-40b08c2e6e63";
     private static readonly TEST_CLIENT_ID = "e05b3070-b0d6-4cd0-b76c-16a46b820bd4";
@@ -265,22 +449,22 @@ export namespace AuthService {
      */
     static create<
       T extends Environment.Production | Environment.Development = Environment.Production
-    >(msalConfig: MsalAuthConfig<T>): BydIntranetClient {
-      const client = new BydIntranetClient();
+    >(msalConfig: MsalAuthConfig<T>): AuthIntranetClient {
+      const client = new AuthIntranetClient();
 
       client.endpoint =
-        msalConfig !== null ? BydIntranetClient.ENDPOINT : BydIntranetClient.TEST_ENDPOINT;
+        msalConfig !== null ? AuthIntranetClient.ORIGIN : AuthIntranetClient.TEST_ORIGIN;
       client.msal = new MsalBrowser({
-        authority: BydIntranetClient.AUTHORITY,
-        clientId: BydIntranetClient.CLIENT_ID,
+        authority: AuthIntranetClient.AUTHORITY,
+        clientId: AuthIntranetClient.CLIENT_ID,
         ...(msalConfig
           ? {
               ...msalConfig,
             }
           : {
-              clientId: BydIntranetClient.TEST_CLIENT_ID,
-              redirectUri: BydIntranetClient.TEST_REDIRECT_URI,
-              postLogoutRedirectUri: BydIntranetClient.TEST_POST_LOGOUT_REDIRECT_URI,
+              clientId: AuthIntranetClient.TEST_CLIENT_ID,
+              redirectUri: AuthIntranetClient.TEST_REDIRECT_URI,
+              postLogoutRedirectUri: AuthIntranetClient.TEST_POST_LOGOUT_REDIRECT_URI,
             }),
       });
 
@@ -324,11 +508,11 @@ export namespace AuthService {
         grant_type: "urn:entra:access_token",
         access_token: accessToken,
         graph_token: graphToken,
-        scope: [...BydIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
+        scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
       });
 
-      const clientResponse: AuthResponse<IConnectTokenResponse> =
-        await BydIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
+      const clientResponse: Common.ClientResponse<IConnectTokenResponse> =
+        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
@@ -383,11 +567,11 @@ export namespace AuthService {
         username,
         password,
         domain: "reconext.com",
-        scope: [...BydIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
+        scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
       });
 
-      const clientResponse: AuthResponse<IConnectTokenResponse> =
-        await BydIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
+      const clientResponse: Common.ClientResponse<IConnectTokenResponse> =
+        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
@@ -474,11 +658,11 @@ export namespace AuthService {
       const params = new URLSearchParams({
         grant_type: "refresh_token",
         refresh_token: refreshToken,
-        scope: [...BydIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
+        scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
       });
 
-      const clientResponse: AuthResponse<IConnectTokenResponse> =
-        await BydIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
+      const clientResponse: Common.ClientResponse<IConnectTokenResponse> =
+        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
