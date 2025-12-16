@@ -6,6 +6,7 @@ import {
   JWSHeaderParameters,
   FlattenedJWSInput,
   JSONWebKeySet,
+  JWTPayload,
 } from "jose";
 
 namespace Common {
@@ -703,12 +704,22 @@ export namespace AuthService {
       return decodeJwt(token);
     }
 
-    public async validateJwtSignature(token: string): Promise<Record<string, unknown>> {
+    public async validateJwtSignature(token: string): Promise<{
+      payload: JWTPayload;
+      passport: {
+        uuid: string;
+        username: unknown;
+      };
+    }> {
       const { payload } = await jwtVerify(token, this.jwks, {
         issuer: `${this.endpoint}/`,
       });
+      const passport = {
+        uuid: payload.sub!,
+        username: payload.username,
+      };
 
-      return payload;
+      return { payload, passport };
     }
   }
 }

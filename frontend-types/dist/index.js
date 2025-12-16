@@ -346,7 +346,11 @@ export var AuthService;
             const { payload } = await jwtVerify(token, this.jwks, {
                 issuer: `${this.endpoint}/`,
             });
-            return payload;
+            const passport = {
+                uuid: payload.sub,
+                username: payload.username,
+            };
+            return { payload, passport };
         }
     }
     AuthIntranetClient.ORIGIN = "https://10.41.0.85:5081";
