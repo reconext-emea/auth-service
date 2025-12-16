@@ -701,25 +701,37 @@ export namespace AuthService {
     }
 
     public static decodeJwt(token: string): Record<string, unknown> {
-      return decodeJwt(token);
+      try {
+        return decodeJwt(token);
+      } catch (error) {
+        console.warn(error);
+        return {};
+      }
     }
 
-    public async validateJwtSignature(token: string): Promise<{
-      payload: JWTPayload;
-      passport: {
-        uuid: string;
-        username: unknown;
-      };
-    }> {
-      const { payload } = await jwtVerify(token, this.jwks, {
-        issuer: `${this.endpoint}/`,
-      });
-      const passport = {
-        uuid: payload.sub!,
-        username: payload.username,
-      };
+    public async validateJwtSignature(token: string): Promise<
+      | {
+          payload: JWTPayload;
+          passport: {
+            uuid: string;
+            username: unknown;
+          };
+        }
+      | false
+    > {
+      try {
+        const { payload } = await jwtVerify(token, this.jwks, {
+          issuer: `${this.endpoint}/`,
+        });
+        const passport = {
+          uuid: payload.sub!,
+          username: payload.username,
+        };
 
-      return { payload, passport };
+        return { payload, passport };
+      } catch (error) {
+        return false;
+      }
     }
   }
 }

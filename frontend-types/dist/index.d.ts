@@ -368,7 +368,7 @@ export declare namespace AuthService {
                 uuid: string;
                 username: unknown;
             };
-        }>;
+        } | false>;
     }
     export {};
 }

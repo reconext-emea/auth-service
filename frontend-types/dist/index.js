@@ -340,17 +340,28 @@ export var AuthService;
             return clientResponse.json();
         }
         static decodeJwt(token) {
-            return decodeJwt(token);
+            try {
+                return decodeJwt(token);
+            }
+            catch (error) {
+                console.warn(error);
+                return {};
+            }
         }
         async validateJwtSignature(token) {
-            const { payload } = await jwtVerify(token, this.jwks, {
-                issuer: `${this.endpoint}/`,
-            });
-            const passport = {
-                uuid: payload.sub,
-                username: payload.username,
-            };
-            return { payload, passport };
+            try {
+                const { payload } = await jwtVerify(token, this.jwks, {
+                    issuer: `${this.endpoint}/`,
+                });
+                const passport = {
+                    uuid: payload.sub,
+                    username: payload.username,
+                };
+                return { payload, passport };
+            }
+            catch (error) {
+                return false;
+            }
         }
     }
     AuthIntranetClient.ORIGIN = "https://10.41.0.85:5081";
