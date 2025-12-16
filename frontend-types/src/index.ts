@@ -725,7 +725,7 @@ export namespace AuthService {
         });
         const passport = {
           uuid: payload.sub!,
-          username: payload.username,
+          username: payload.username as string,
         };
 
         return { payload, passport };
