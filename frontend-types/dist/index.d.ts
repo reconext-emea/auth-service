@@ -1,4 +1,5 @@
 import { BrowserAuthOptions } from "@azure/msal-browser";
+import { JWTPayload } from "jose";
 declare namespace Common {
     interface ClientResponse<T> extends Response {
         json(): Promise<T>;
@@ -361,7 +362,13 @@ export declare namespace AuthService {
          */
         refreshTokenAsync(refreshToken: string, scopes?: string[]): Promise<IConnectTokenResponse>;
         static decodeJwt(token: string): Record<string, unknown>;
-        validateJwtSignature(token: string): Promise<Record<string, unknown>>;
+        validateJwtSignature(token: string): Promise<{
+            payload: JWTPayload;
+            passport: {
+                uuid: string;
+                username: unknown;
+            };
+        }>;
     }
     export {};
 }
