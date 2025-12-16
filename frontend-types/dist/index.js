@@ -1,4 +1,5 @@
 import { PublicClientApplication } from "@azure/msal-browser";
+import { jwtVerify, createRemoteJWKSet, decodeJwt, } from "jose";
 var Common;
 (function (Common) {
     class Client {
@@ -150,6 +151,7 @@ export var AuthService;
             const client = new AuthIntranetClient();
             client.endpoint =
                 msalConfig !== null ? AuthIntranetClient.ORIGIN : AuthIntranetClient.TEST_ORIGIN;
+            client.jwks = createRemoteJWKSet(new URL(`${client.endpoint}/.well-known/jwks`));
             client.msal = new MsalBrowser({
                 authority: AuthIntranetClient.AUTHORITY,
                 clientId: AuthIntranetClient.CLIENT_ID,
@@ -337,26 +339,14 @@ export var AuthService;
             });
             return clientResponse.json();
         }
-        /**
-         * Decodes a JWT without validating its signature.
-         * Returns the payload as an object.
-         *
-         * @param token The JWT string to decode.
-         * @returns The decoded payload object.
-         *
-         * @throws {Error} If the token is not a valid JWT.
-         */
         static decodeJwt(token) {
-            try {
-                const [, payload] = token.split(".");
-                if (!payload)
-                    throw new Error("Invalid JWT format.");
-                const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-                return JSON.parse(decoded);
-            }
-            catch {
-                throw new Error("Failed to decode JWT.");
-            }
+            return decodeJwt(token);
+        }
+        async validateJwtSignature(token) {
+            const { payload } = await jwtVerify(token, this.jwks, {
+                issuer: `${this.endpoint}/`,
+            });
+            return payload;
         }
     }
     AuthIntranetClient.ORIGIN = "https://10.41.0.85:5081";

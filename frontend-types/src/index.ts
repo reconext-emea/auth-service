@@ -1,4 +1,12 @@
 import { BrowserAuthOptions, PublicClientApplication } from "@azure/msal-browser";
+import {
+  jwtVerify,
+  createRemoteJWKSet,
+  decodeJwt,
+  JWSHeaderParameters,
+  FlattenedJWSInput,
+  JSONWebKeySet,
+} from "jose";
 
 namespace Common {
   export interface ClientResponse<T> extends Response {
@@ -207,6 +215,18 @@ export namespace UsersService {
 }
 
 export namespace AuthService {
+  export interface Jwk {
+    kid: string;
+    kty: string;
+    alg: string;
+    use: string;
+    n?: string;
+    e?: string;
+    crv?: string;
+    x?: string;
+    y?: string;
+  }
+
   /**
    * Response returned from `/connect/token`.
    */
@@ -414,7 +434,14 @@ export namespace AuthService {
     private static readonly AUTH_SCOPES: string[] = ["openid", "offline_access"];
 
     private endpoint!: string;
-
+    private jwks!: {
+      (protectedHeader?: JWSHeaderParameters, token?: FlattenedJWSInput): Promise<CryptoKey>;
+      coolingDown: boolean;
+      fresh: boolean;
+      reloading: boolean;
+      reload: () => Promise<void>;
+      jwks: () => JSONWebKeySet | undefined;
+    };
     private msal!: IMsalBrowser;
     private initialized: IInitializedMsalBrowser | null = null;
 
@@ -454,6 +481,7 @@ export namespace AuthService {
 
       client.endpoint =
         msalConfig !== null ? AuthIntranetClient.ORIGIN : AuthIntranetClient.TEST_ORIGIN;
+      client.jwks = createRemoteJWKSet(new URL(`${client.endpoint}/.well-known/jwks`));
       client.msal = new MsalBrowser({
         authority: AuthIntranetClient.AUTHORITY,
         clientId: AuthIntranetClient.CLIENT_ID,
@@ -671,25 +699,16 @@ export namespace AuthService {
       return clientResponse.json();
     }
 
-    /**
-     * Decodes a JWT without validating its signature.
-     * Returns the payload as an object.
-     *
-     * @param token The JWT string to decode.
-     * @returns The decoded payload object.
-     *
-     * @throws {Error} If the token is not a valid JWT.
-     */
     public static decodeJwt(token: string): Record<string, unknown> {
-      try {
-        const [, payload] = token.split(".");
-        if (!payload) throw new Error("Invalid JWT format.");
+      return decodeJwt(token);
+    }
 
-        const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-        return JSON.parse(decoded);
-      } catch {
-        throw new Error("Failed to decode JWT.");
-      }
+    public async validateJwtSignature(token: string): Promise<Record<string, unknown>> {
+      const { payload } = await jwtVerify(token, this.jwks, {
+        issuer: `${this.endpoint}/`,
+      });
+
+      return payload;
     }
   }
 }

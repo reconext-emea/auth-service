@@ -83,6 +83,17 @@ export declare namespace UsersService {
     }
 }
 export declare namespace AuthService {
+    export interface Jwk {
+        kid: string;
+        kty: string;
+        alg: string;
+        use: string;
+        n?: string;
+        e?: string;
+        crv?: string;
+        x?: string;
+        y?: string;
+    }
     /**
      * Response returned from `/connect/token`.
      */
@@ -212,6 +223,7 @@ export declare namespace AuthService {
         private static readonly TEST_POST_LOGOUT_REDIRECT_URI;
         private static readonly AUTH_SCOPES;
         private endpoint;
+        private jwks;
         private msal;
         private initialized;
         private constructor();
@@ -348,16 +360,8 @@ export declare namespace AuthService {
          * an OAuth2 error object, which can be detected using `isAuthError()`.
          */
         refreshTokenAsync(refreshToken: string, scopes?: string[]): Promise<IConnectTokenResponse>;
-        /**
-         * Decodes a JWT without validating its signature.
-         * Returns the payload as an object.
-         *
-         * @param token The JWT string to decode.
-         * @returns The decoded payload object.
-         *
-         * @throws {Error} If the token is not a valid JWT.
-         */
         static decodeJwt(token: string): Record<string, unknown>;
+        validateJwtSignature(token: string): Promise<Record<string, unknown>>;
     }
     export {};
 }
