@@ -714,7 +714,7 @@ export namespace AuthService {
           payload: JWTPayload;
           passport: {
             uuid: string;
-            username: unknown;
+            username: string;
           };
         }
       | false
