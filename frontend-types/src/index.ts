@@ -1,4 +1,4 @@
-import { BrowserAuthOptions, PublicClientApplication } from "@azure/msal-browser";
+import { AccountInfo, BrowserAuthOptions, PublicClientApplication } from "@azure/msal-browser";
 import {
   jwtVerify,
   createRemoteJWKSet,
@@ -375,11 +375,13 @@ export namespace AuthService {
   interface IInitializedMsalBrowser {
     login(): Promise<{ accessToken: string; graphToken: string }>;
     logout(): Promise<void>;
+    account(): AccountInfo | null;
   }
 
   interface IIntranetMsalClient {
     msalLogin(): Promise<IConnectTokenResponse | void>;
     msalLogout(): Promise<void>;
+    msalAccount(): Promise<AccountInfo | null>;
   }
 
   class MsalBrowser implements IMsalBrowser {
@@ -418,6 +420,10 @@ export namespace AuthService {
 
     async logout(): Promise<void> {
       await this.instance.logoutPopup();
+    }
+
+    account(): AccountInfo | null {
+      return this.instance.getActiveAccount();
     }
   }
 
@@ -563,6 +569,12 @@ export namespace AuthService {
       if (!this.initialized) await this.init();
 
       await this.initialized!.logout();
+    }
+
+    public async msalAccount(): Promise<AccountInfo | null> {
+      if (!this.initialized) await this.init();
+
+      return this.initialized!.account();
     }
 
     /**
