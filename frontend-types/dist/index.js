@@ -116,6 +116,9 @@ export var AuthService;
         async logout() {
             await this.instance.logoutPopup();
         }
+        account() {
+            return this.instance.getActiveAccount();
+        }
     }
     class AuthIntranetClient extends Common.Client {
         constructor() {
@@ -224,6 +227,11 @@ export var AuthService;
             if (!this.initialized)
                 await this.init();
             await this.initialized.logout();
+        }
+        async msalAccount() {
+            if (!this.initialized)
+                await this.init();
+            return this.initialized.account();
         }
         /**
          * Performs a Resource Owner Password Credentials (ROPC) login against the backend.

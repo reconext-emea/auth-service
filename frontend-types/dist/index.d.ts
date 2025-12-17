@@ -1,4 +1,4 @@
-import { BrowserAuthOptions } from "@azure/msal-browser";
+import { AccountInfo, BrowserAuthOptions } from "@azure/msal-browser";
 import { JWTPayload } from "jose";
 declare namespace Common {
     interface ClientResponse<T> extends Response {
@@ -213,6 +213,7 @@ export declare namespace AuthService {
     interface IIntranetMsalClient {
         msalLogin(): Promise<IConnectTokenResponse | void>;
         msalLogout(): Promise<void>;
+        msalAccount(): Promise<AccountInfo | null>;
     }
     export class AuthIntranetClient extends Common.Client implements IIntranetMsalClient {
         private static readonly ORIGIN;
@@ -289,6 +290,7 @@ export declare namespace AuthService {
          * @throws {Error} If MSAL initialization fails or logout encounters an error.
          */
         msalLogout(): Promise<void>;
+        msalAccount(): Promise<AccountInfo | null>;
         /**
          * Performs a Resource Owner Password Credentials (ROPC) login against the backend.
          *
