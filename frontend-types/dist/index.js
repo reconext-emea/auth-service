@@ -152,9 +152,11 @@ export var AuthService;
          */
         static create(msalConfig) {
             const client = new AuthIntranetClient();
-            client.endpoint =
+            client.host =
                 msalConfig !== null ? AuthIntranetClient.ORIGIN : AuthIntranetClient.TEST_ORIGIN;
-            client.jwks = createRemoteJWKSet(new URL(`http://auth-service:5081/.well-known/jwks`) // ${client.endpoint}
+            client.jwksHost =
+                msalConfig !== null ? AuthIntranetClient.ORIGIN : "http://host.docker.internal:5081";
+            client.jwks = createRemoteJWKSet(new URL(`${client.jwksHost}/.well-known/jwks`) // ${client.endpoint}
             );
             client.msal = new MsalBrowser({
                 authority: AuthIntranetClient.AUTHORITY,
@@ -208,7 +210,7 @@ export var AuthService;
                 graph_token: graphToken,
                 scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
             });
-            const clientResponse = await AuthIntranetClient.fetch(`${this.endpoint}/connect/token`, {
+            const clientResponse = await AuthIntranetClient.fetch(`${this.host}/connect/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString(),
@@ -263,7 +265,7 @@ export var AuthService;
                 domain: "reconext.com",
                 scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
             });
-            const clientResponse = await AuthIntranetClient.fetch(`${this.endpoint}/connect/token`, {
+            const clientResponse = await AuthIntranetClient.fetch(`${this.host}/connect/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString(),
@@ -302,7 +304,7 @@ export var AuthService;
          */
         async saveErrorAsync(error) {
             const reference = crypto.randomUUID();
-            await fetch(`${this.endpoint}/api/error-log`, {
+            await fetch(`${this.host}/api/error-log`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -341,7 +343,7 @@ export var AuthService;
                 refresh_token: refreshToken,
                 scope: [...AuthIntranetClient.AUTH_SCOPES, ...scopes].join(" "),
             });
-            const clientResponse = await AuthIntranetClient.fetch(`${this.endpoint}/connect/token`, {
+            const clientResponse = await AuthIntranetClient.fetch(`${this.host}/connect/token`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString(),
@@ -360,7 +362,7 @@ export var AuthService;
         async validateJwtSignature(token) {
             try {
                 const { payload } = await jwtVerify(token, this.jwks, {
-                    issuer: `${this.endpoint}/`,
+                    issuer: `${this.host}/`,
                 });
                 const { sub, username, email, office_location, confidentiality, permission, role } = payload;
                 const passport = {

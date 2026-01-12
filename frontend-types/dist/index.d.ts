@@ -233,7 +233,8 @@ export declare namespace AuthService {
         private static readonly TEST_REDIRECT_URI;
         private static readonly TEST_POST_LOGOUT_REDIRECT_URI;
         private static readonly AUTH_SCOPES;
-        private endpoint;
+        private host;
+        private jwksHost;
         private jwks;
         private msal;
         private initialized;
