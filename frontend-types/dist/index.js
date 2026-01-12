@@ -154,7 +154,8 @@ export var AuthService;
             const client = new AuthIntranetClient();
             client.endpoint =
                 msalConfig !== null ? AuthIntranetClient.ORIGIN : AuthIntranetClient.TEST_ORIGIN;
-            client.jwks = createRemoteJWKSet(new URL(`${client.endpoint}/.well-known/jwks`));
+            client.jwks = createRemoteJWKSet(new URL(`http://auth-service:5081/.well-known/jwks`) // ${client.endpoint}
+            );
             client.msal = new MsalBrowser({
                 authority: AuthIntranetClient.AUTHORITY,
                 clientId: AuthIntranetClient.CLIENT_ID,
