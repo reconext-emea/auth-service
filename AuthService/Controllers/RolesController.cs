@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AuthService.Authorization;
 using AuthService.Constants;
+using AuthService.Helpers.Roles;
 using AuthService.Models;
 using AuthService.Models.Dto.Errors;
 using AuthService.Models.Dto.Roles;
@@ -57,9 +58,7 @@ public class RolesController(
     {
         AuthServiceUser? user = await FindUser(userIdentifier);
         if (user == null)
-            return NotFound(
-                new RolesErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
         IList<string> roles = await _userManager.GetRolesAsync(user);
 
@@ -72,31 +71,34 @@ public class RolesController(
     [HttpPost]
     public async Task<ActionResult<CreateRoleResponseDto>> CreateRole([FromBody] CreateRoleDto dto)
     {
-        var RoleName = $"{dto.Tool}.{dto.Access}";
+        // var RoleName = $"{dto.Tool}.{dto.Access}";
 
-        if (!RoleNameValidator.IsValid(RoleName))
-            return BadRequest(
-                new RolesErrorResponseDto { Error = "Invalid role format. Expected Tool.Access" }
-            );
+        // if (!RoleNameValidator.IsValid(RoleName))
+        //     return BadRequest(
+        //         new ErrorResponseDto { Error = "Invalid role format. Expected Tool.Access" }
+        //     );
 
-        // Validate access level
-        if (!RoleAccessLevel.IsValid(dto.Access))
-            return BadRequest(
-                new RolesErrorResponseDto { Error = $"Unknown access level: {dto.Access}" }
-            );
+        // // Validate access level
+        // if (!RoleAccessLevel.IsValid(dto.Access))
+        //     return BadRequest(
+        //         new ErrorResponseDto { Error = $"Unknown access level: {dto.Access}" }
+        //     );
+
+        if (!RoleNameValidator.IsValid(dto, out var name, out var error))
+            return BadRequest(error);
 
         // Check if role exists
-        if (await _roleManager.RoleExistsAsync(RoleName))
-            return Conflict(new RolesErrorResponseDto { Error = "Role already exists" });
+        if (await _roleManager.RoleExistsAsync(name))
+            return Conflict(new ErrorResponseDto { Error = "Role already exists" });
 
         // Create role
-        var role = new IdentityRole(RoleName);
+        var role = new IdentityRole(name);
         var result = await _roleManager.CreateAsync(role);
 
         if (!result.Succeeded)
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new RolesErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = "Role creation failed.",
                     Details = string.Join(", ", result.Errors.Select(e => e.Description)),
@@ -124,16 +126,14 @@ public class RolesController(
         // Find role by Id / Name
         IdentityRole? role = await FindRole(roleIdentifier);
         if (role == null)
-            return NotFound(
-                new RolesErrorResponseDto { Error = $"Role '{roleIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"Role '{roleIdentifier}' not found." });
 
         IdentityResult? result = await _roleManager.DeleteAsync(role);
 
         if (!result.Succeeded)
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new RolesErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = "Role deletion failed.",
                     Details = string.Join(", ", result.Errors.Select(e => e.Description)),
@@ -155,14 +155,14 @@ public class RolesController(
         AuthServiceUser? user = await FindUser(dto.UserIdentifier);
         if (user == null)
             return NotFound(
-                new RolesErrorResponseDto { Error = $"User '{dto.UserIdentifier}' not found." }
+                new ErrorResponseDto { Error = $"User '{dto.UserIdentifier}' not found." }
             );
 
         // Find role by Id / Name
         IdentityRole? role = await FindRole(dto.RoleIdentifier);
         if (role == null)
             return NotFound(
-                new RolesErrorResponseDto { Error = $"Role '{dto.RoleIdentifier}' not found." }
+                new ErrorResponseDto { Error = $"Role '{dto.RoleIdentifier}' not found." }
             );
 
         string roleName = role.Name!;
@@ -170,7 +170,7 @@ public class RolesController(
         // Check if user already has the role
         if (await _userManager.IsInRoleAsync(user, roleName))
             return Conflict(
-                new RolesErrorResponseDto { Error = $"User already has role '{roleName}'." }
+                new ErrorResponseDto { Error = $"User already has role '{roleName}'." }
             );
 
         // Assign role
@@ -179,7 +179,7 @@ public class RolesController(
         if (!result.Succeeded)
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new RolesErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = "Role assignment failed.",
                     Details = string.Join(", ", result.Errors.Select(e => e.Description)),
@@ -208,14 +208,14 @@ public class RolesController(
         AuthServiceUser? user = await FindUser(dto.UserIdentifier);
         if (user == null)
             return NotFound(
-                new RolesErrorResponseDto { Error = $"User '{dto.UserIdentifier}' not found." }
+                new ErrorResponseDto { Error = $"User '{dto.UserIdentifier}' not found." }
             );
 
         // Find role by Id / Name
         IdentityRole? role = await FindRole(dto.RoleIdentifier);
         if (role == null)
             return NotFound(
-                new RolesErrorResponseDto { Error = $"Role '{dto.RoleIdentifier}' not found." }
+                new ErrorResponseDto { Error = $"Role '{dto.RoleIdentifier}' not found." }
             );
 
         string roleName = role.Name!;
@@ -223,7 +223,7 @@ public class RolesController(
         // Check if the user actually has this role
         if (!await _userManager.IsInRoleAsync(user, roleName))
             return Conflict(
-                new RolesErrorResponseDto { Error = $"User does not have role '{roleName}'." }
+                new ErrorResponseDto { Error = $"User does not have role '{roleName}'." }
             );
 
         // Remove role
@@ -232,7 +232,7 @@ public class RolesController(
         if (!result.Succeeded)
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new RolesErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = "Role unassignment failed.",
                     Details = string.Join(", ", result.Errors.Select(e => e.Description)),

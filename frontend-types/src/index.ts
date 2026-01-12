@@ -30,6 +30,15 @@ namespace Common {
 }
 
 export namespace UsersService {
+  export interface JWTPayloadPassport {
+    uuid: string;
+    username: string;
+    email: string;
+    office_location: string;
+    confidentiality: string;
+    permission: string[];
+    role: string[];
+  }
   /**
    * List of allowed emea office locations, based on environmental variable: Ldap__AllowedEmeaOfficeNames.
    *
@@ -724,10 +733,7 @@ export namespace AuthService {
     public async validateJwtSignature(token: string): Promise<
       | {
           payload: JWTPayload;
-          passport: {
-            uuid: string;
-            username: string;
-          };
+          passport: UsersService.JWTPayloadPassport;
         }
       | false
     > {
@@ -735,9 +741,17 @@ export namespace AuthService {
         const { payload } = await jwtVerify(token, this.jwks, {
           issuer: `${this.endpoint}/`,
         });
+        const { sub, username, email, office_location, confidentiality, permission, role } =
+          payload;
+
         const passport = {
-          uuid: payload.sub!,
-          username: payload.username as string,
+          uuid: sub as string,
+          username: username as string,
+          email: email as string,
+          office_location: office_location as string,
+          confidentiality: confidentiality as string,
+          permission: permission as string[],
+          role: role as string[],
         };
 
         return { payload, passport };

@@ -4,6 +4,7 @@ using AuthService.Clients.LdapClient;
 using AuthService.Data;
 using AuthService.Models;
 using AuthService.Services.OpenIddict;
+using AuthService.Services.UserImport;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -65,6 +66,8 @@ services.AddDbContext<AuthServiceDbContext>(options =>
     options.UseNpgsql(connStr);
     options.UseOpenIddict();
 });
+
+services.AddScoped<IUserImportService, UserImportService>();
 
 // ---------- Identity ----------
 services

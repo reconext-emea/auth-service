@@ -9,6 +9,15 @@ declare namespace Common {
     }
 }
 export declare namespace UsersService {
+    interface JWTPayloadPassport {
+        uuid: string;
+        username: string;
+        email: string;
+        office_location: string;
+        confidentiality: string;
+        permission: string[];
+        role: string[];
+    }
     /**
      * List of allowed emea office locations, based on environmental variable: Ldap__AllowedEmeaOfficeNames.
      *
@@ -366,10 +375,7 @@ export declare namespace AuthService {
         static decodeJwt(token: string): Record<string, unknown>;
         validateJwtSignature(token: string): Promise<{
             payload: JWTPayload;
-            passport: {
-                uuid: string;
-                username: string;
-            };
+            passport: UsersService.JWTPayloadPassport;
         } | false>;
     }
     export {};

@@ -4,6 +4,7 @@ using AuthService.Data;
 using AuthService.Models;
 using AuthService.Models.Dto.Errors;
 using AuthService.Models.Dto.Users;
+using AuthService.Services.UserImport;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,23 +17,90 @@ namespace AuthService.Controllers;
 public class UsersController(
     UserManager<AuthServiceUser> userManager,
     RoleManager<IdentityRole> roleManager,
-    AuthServiceDbContext db
+    AuthServiceDbContext dbContext,
+    IUserImportService userImportService
 ) : ControllerBase
 {
     private readonly UserManager<AuthServiceUser> _userManager = userManager;
 
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
-    private readonly AuthServiceDbContext _db = db;
+
+    private readonly AuthServiceDbContext _dbContext = dbContext;
+
+    private readonly IUserImportService _userImportService = userImportService;
+
+    // --------------------------------------------------------------
+    // Import Users
+    // --------------------------------------------------------------
+    [HttpPost("import")]
+    public async Task<ActionResult<ImportUsersResponseDto>> ImportUsers(
+        [FromBody] ImportUsersRequestDto dto,
+        CancellationToken cancellationToken
+    )
+    {
+        var futureResponse = new ImportUsersResponseDto();
+
+        foreach (ImportUserDto import in dto.Users)
+        {
+            await _userImportService.ImportSingleUserAsync(
+                import,
+                futureResponse,
+                cancellationToken
+            );
+        }
+
+        return Ok(futureResponse);
+    }
+
+    // --------------------------------------------------------------
+    // Delete User
+    // --------------------------------------------------------------
+    [HttpDelete("one/{userIdentifier}")]
+    public async Task<ActionResult<DeleteUserResponseDto>> DeleteUser(string userIdentifier)
+    {
+        AuthServiceUser? user = await _userManager
+            .Users.Include(u => u.AppSettings)
+            .Include(u => u.CustomProperties)
+            .FirstOrDefaultAsync(u =>
+                u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+            );
+
+        if (user == null)
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
+
+        var result = await _userManager.DeleteAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ErrorResponseDto
+                {
+                    Error = "Failed to delete user.",
+                    Details = string.Join(", ", result.Errors.Select(e => e.Description)),
+                }
+            );
+        }
+
+        return Ok(new DeleteUserResponseDto());
+    }
 
     // --------------------------------------------------------------
     // Get All Users
     // --------------------------------------------------------------
-    [HttpGet("many/{includeSettings:bool}")]
-    public async Task<ActionResult<GetUsersResponseDto>> GetUsers(bool includeSettings)
+    [HttpGet("many/{includeSettings:bool}/{includeProperties:bool}")]
+    public async Task<ActionResult<GetUsersResponseDto>> GetUsers(
+        bool includeSettings,
+        bool includeProperties
+    )
     {
         IQueryable<AuthServiceUser> query = _userManager.Users;
+
         if (includeSettings)
             query = query.Include(u => u.AppSettings);
+
+        if (includeProperties)
+            query = query.Include(u => u.CustomProperties);
 
         List<AuthServiceUser> users = await query.ToListAsync();
         List<AuthServiceUserDto> passports = [.. users.Select(u => new AuthServiceUserDto(u))];
@@ -43,24 +111,27 @@ public class UsersController(
     // --------------------------------------------------------------
     // Get Specific User by Id / Username / Email
     // --------------------------------------------------------------
-    [HttpGet("one/{userIdentifier}/{includeSettings:bool}")]
+    [HttpGet("one/{userIdentifier}/{includeSettings:bool}/{includeProperties:bool}")]
     public async Task<ActionResult<AuthServiceUserDto>> GetUser(
         string userIdentifier,
-        bool includeSettings
+        bool includeSettings,
+        bool includeProperties
     )
     {
         IQueryable<AuthServiceUser> query = _userManager.Users;
+
         if (includeSettings)
             query = query.Include(u => u.AppSettings);
+
+        if (includeProperties)
+            query = query.Include(u => u.CustomProperties);
 
         AuthServiceUser? user = await query.FirstOrDefaultAsync(u =>
             u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
         );
 
         if (user == null)
-            return NotFound(
-                new UsersErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
         AuthServiceUserDto passport = new(user);
 
@@ -79,7 +150,7 @@ public class UsersController(
         if (!PreferredLanguage.IsValid(dto.PreferredLanguageCode))
         {
             return BadRequest(
-                new UsersErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = $"Invalid preferred language '{dto.PreferredLanguageCode}'. ",
                     Details = $"Allowed values: {string.Join(", ", PreferredLanguage.Options)}",
@@ -90,7 +161,7 @@ public class UsersController(
         if (!ColorTheme.IsValid(dto.ColorThemeCode))
         {
             return BadRequest(
-                new UsersErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = $"Invalid color theme '{dto.ColorThemeCode}'. ",
                     Details = $"Allowed values: {string.Join(", ", ColorTheme.Options)}",
@@ -105,9 +176,7 @@ public class UsersController(
             );
 
         if (user == null)
-            return NotFound(
-                new UsersErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
         if (user.AppSettings == null)
         {
@@ -118,7 +187,7 @@ public class UsersController(
                 ColorThemeCode = dto.ColorThemeCode,
                 User = user,
             };
-            _db.AspNetUsersAppSettings.Add(settings);
+            _dbContext.AspNetUsersAppSettings.Add(settings);
         }
         else
         {
@@ -126,9 +195,58 @@ public class UsersController(
             user.AppSettings.ColorThemeCode = dto.ColorThemeCode;
         }
 
-        await _db.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync();
 
-        return Ok(new UpdateUserSettingsResponseDto { Message = "Settings updated successfully." });
+        return Ok(new UpdateUserSettingsResponseDto());
+    }
+
+    // --------------------------------------------------------------
+    // Update User Properties
+    // --------------------------------------------------------------
+    [HttpPut("one/{userIdentifier}/properties")]
+    public async Task<ActionResult<UpdateUserPropertiesResponseDto>> UpdateUserProperties(
+        string userIdentifier,
+        [FromBody] UpdateUserPropertiesDto dto
+    )
+    {
+        if (!ConfidentialityClass.IsValid(dto.Confidentiality))
+        {
+            return BadRequest(
+                new ErrorResponseDto
+                {
+                    Error = $"Invalid confidentiality class '{dto.Confidentiality}'. ",
+                    Details = $"Allowed values: {string.Join(", ", ConfidentialityClass.Options)}",
+                }
+            );
+        }
+
+        AuthServiceUser? user = await _userManager
+            .Users.Include(u => u.CustomProperties)
+            .FirstOrDefaultAsync(u =>
+                u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+            );
+
+        if (user == null)
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
+
+        if (user.CustomProperties == null)
+        {
+            var properties = new AuthServiceUserCustomProperties
+            {
+                Id = user.Id,
+                Confidentiality = dto.Confidentiality,
+                User = user,
+            };
+            _dbContext.AspNetUsersCustomProperties.Add(properties);
+        }
+        else
+        {
+            user.CustomProperties.Confidentiality = dto.Confidentiality;
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new UpdateUserPropertiesResponseDto());
     }
 
     // --------------------------------------------------------------
@@ -142,9 +260,7 @@ public class UsersController(
         );
 
         if (user == null)
-            return NotFound(
-                new UsersErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
         var userClaims = await _userManager.GetClaimsAsync(user);
 
@@ -185,9 +301,7 @@ public class UsersController(
         );
 
         if (user == null)
-            return NotFound(
-                new UsersErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
         // Find the claim by value
         var claims = await _userManager.GetClaimsAsync(user);
@@ -197,7 +311,7 @@ public class UsersController(
 
         if (claimToRemove == null)
             return NotFound(
-                new UsersErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = $"Claim '{userClaimValue}' not found for user '{userIdentifier}'.",
                 }
@@ -208,16 +322,14 @@ public class UsersController(
         if (!result.Succeeded)
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new RolesErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = "Failed to remove claim.",
                     Details = string.Join(", ", result.Errors.Select(e => e.Description)),
                 }
             );
 
-        return Ok(
-            new DeleteClaimFromUserResponseDto { Message = "User claim removed successfully." }
-        );
+        return Ok(new DeleteClaimFromUserResponseDto());
     }
 
     // --------------------------------------------------------------
@@ -234,9 +346,7 @@ public class UsersController(
         );
 
         if (user == null)
-            return NotFound(
-                new UsersErrorResponseDto { Error = $"User '{userIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
         var userClaimValue = $"user.{dto.Tool.ToLower()}.{dto.Privilege.ToLower()}";
 
@@ -244,7 +354,7 @@ public class UsersController(
         if (existingClaims.Any(c => c.Type == "permission" && c.Value == userClaimValue))
         {
             return BadRequest(
-                new UsersErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = "User already has this claim.",
                     Details = userClaimValue,
@@ -259,13 +369,13 @@ public class UsersController(
         if (!result.Succeeded)
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new RolesErrorResponseDto
+                new ErrorResponseDto
                 {
                     Error = "Failed to add claim.",
                     Details = string.Join(", ", result.Errors.Select(e => e.Description)),
                 }
             );
 
-        return Ok(new AddClaimToUserDtoResponseDto { Message = "User claim added successfully." });
+        return Ok(new AddClaimToUserDtoResponseDto());
     }
 }

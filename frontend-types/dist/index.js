@@ -361,9 +361,15 @@ export var AuthService;
                 const { payload } = await jwtVerify(token, this.jwks, {
                     issuer: `${this.endpoint}/`,
                 });
+                const { sub, username, email, office_location, confidentiality, permission, role } = payload;
                 const passport = {
-                    uuid: payload.sub,
-                    username: payload.username,
+                    uuid: sub,
+                    username: username,
+                    email: email,
+                    office_location: office_location,
+                    confidentiality: confidentiality,
+                    permission: permission,
+                    role: role,
                 };
                 return { payload, passport };
             }

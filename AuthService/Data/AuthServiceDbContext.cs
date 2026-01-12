@@ -12,6 +12,9 @@ public class AuthServiceDbContext(DbContextOptions<AuthServiceDbContext> options
     public DbSet<AuthServiceUserAppSettings> AspNetUsersAppSettings =>
         Set<AuthServiceUserAppSettings>();
 
+    public DbSet<AuthServiceUserCustomProperties> AspNetUsersCustomProperties =>
+        Set<AuthServiceUserCustomProperties>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -34,5 +37,21 @@ public class AuthServiceDbContext(DbContextOptions<AuthServiceDbContext> options
             .Entity<AuthServiceUserAppSettings>()
             .Property(s => s.ColorThemeCode)
             .HasDefaultValue(ColorTheme.Light);
+
+        builder.Entity<AuthServiceUserCustomProperties>().ToTable("AspNetUsersCustomProperties");
+
+        builder
+            .Entity<AuthServiceUser>()
+            .HasOne(u => u.CustomProperties)
+            .WithOne(s => s.User)
+            .HasForeignKey<AuthServiceUserCustomProperties>(s => s.Id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .Entity<AuthServiceUserCustomProperties>()
+            .Property(s => s.Confidentiality)
+            .HasDefaultValue(ConfidentialityClass.Class1);
+
+        builder.Entity<AuthError>().ToTable("AuthErrors");
     }
 }

@@ -8,6 +8,7 @@ public class AuthServiceUserDto
     public string DisplayName { get; private set; }
     public string OfficeLocation { get; private set; }
     public AuthServiceUserSettingsDto? AppSettings { get; private set; }
+    public AuthServiceUserCustomPropertiesDto? CustomProperties { get; private set; }
 
     public AuthServiceUserDto(AuthServiceUser user)
     {
@@ -20,6 +21,11 @@ public class AuthServiceUserDto
         if (user.AppSettings != null)
         {
             AppSettings = new AuthServiceUserSettingsDto(user.AppSettings);
+        }
+
+        if (user.CustomProperties != null)
+        {
+            CustomProperties = new AuthServiceUserCustomPropertiesDto(user.CustomProperties);
         }
     }
 }
