@@ -756,6 +756,7 @@ export namespace AuthService {
 
         return { payload, passport };
       } catch (error) {
+        console.error("Validation of JwtSignature error: ", error);
         return false;
       }
     }
