@@ -449,7 +449,8 @@ export namespace AuthService {
     private static readonly TEST_POST_LOGOUT_REDIRECT_URI = "http://localhost";
     private static readonly AUTH_SCOPES: string[] = ["openid", "offline_access"];
 
-    private endpoint!: string;
+    private host!: string;
+    private jwksHost!: string;
     private jwks!: {
       (protectedHeader?: JWSHeaderParameters, token?: FlattenedJWSInput): Promise<CryptoKey>;
       coolingDown: boolean;
@@ -495,10 +496,12 @@ export namespace AuthService {
     >(msalConfig: MsalAuthConfig<T>): AuthIntranetClient {
       const client = new AuthIntranetClient();
 
-      client.endpoint =
+      client.host =
         msalConfig !== null ? AuthIntranetClient.ORIGIN : AuthIntranetClient.TEST_ORIGIN;
+      client.jwksHost =
+        msalConfig !== null ? AuthIntranetClient.ORIGIN : "http://host.docker.internal:5081";
       client.jwks = createRemoteJWKSet(
-        new URL(`http://auth-service:5081/.well-known/jwks`) // ${client.endpoint}
+        new URL(`${client.jwksHost}/.well-known/jwks`) // ${client.endpoint}
       );
       client.msal = new MsalBrowser({
         authority: AuthIntranetClient.AUTHORITY,
@@ -558,7 +561,7 @@ export namespace AuthService {
       });
 
       const clientResponse: Common.ClientResponse<IConnectTokenResponse> =
-        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
+        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.host}/connect/token`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
@@ -623,7 +626,7 @@ export namespace AuthService {
       });
 
       const clientResponse: Common.ClientResponse<IConnectTokenResponse> =
-        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
+        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.host}/connect/token`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
@@ -668,7 +671,7 @@ export namespace AuthService {
     public async saveErrorAsync(error: unknown): Promise<string> {
       const reference = crypto.randomUUID();
 
-      await fetch(`${this.endpoint}/api/error-log`, {
+      await fetch(`${this.host}/api/error-log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -714,7 +717,7 @@ export namespace AuthService {
       });
 
       const clientResponse: Common.ClientResponse<IConnectTokenResponse> =
-        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.endpoint}/connect/token`, {
+        await AuthIntranetClient.fetch<IConnectTokenResponse>(`${this.host}/connect/token`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
@@ -741,7 +744,7 @@ export namespace AuthService {
     > {
       try {
         const { payload } = await jwtVerify(token, this.jwks, {
-          issuer: `${this.endpoint}/`,
+          issuer: `${this.host}/`,
         });
         const { sub, username, email, office_location, confidentiality, permission, role } =
           payload;
