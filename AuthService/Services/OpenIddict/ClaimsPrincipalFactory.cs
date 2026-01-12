@@ -62,6 +62,13 @@ public class ClaimsPrincipalFactory(
             ).SetDestinations(Destinations.IdentityToken)
         );
 
+        identity.AddClaim(
+            new Claim("confidentiality", user.CustomProperties.Confidentiality).SetDestinations(
+                Destinations.AccessToken,
+                Destinations.IdentityToken
+            )
+        );
+
         // ---------- LOAD USER "role" ----------
         var roles = await _userManager.GetRolesAsync(user);
 

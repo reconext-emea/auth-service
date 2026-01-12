@@ -62,6 +62,7 @@ public class PasswordGrantHandler(
         string normalizedName = _userManager.NormalizeName(ldapUser.Username);
         AuthServiceUser? user = await _userManager
             .Users.Include(u => u.AppSettings)
+            .Include(u => u.CustomProperties)
             .SingleOrDefaultAsync(u => u.NormalizedUserName == normalizedName);
 
         if (user == null)

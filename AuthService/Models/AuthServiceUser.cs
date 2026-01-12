@@ -1,5 +1,6 @@
 using AuthService.Clients.GraphClient;
 using AuthService.Clients.LdapClient;
+using AuthService.Models.Dto.Users;
 using Microsoft.AspNetCore.Identity;
 
 namespace AuthService.Models;
@@ -10,8 +11,31 @@ public class AuthServiceUser : IdentityUser
     public string OfficeLocation { get; private set; } = null!;
 
     public AuthServiceUserAppSettings AppSettings { get; set; } = null!;
+    public AuthServiceUserCustomProperties CustomProperties { get; set; } = null!;
 
     private AuthServiceUser() { }
+
+    public static AuthServiceUser CreateFromImport(
+        string importUsername,
+        UpdateUserSettingsDto? settingsDto = null,
+        UpdateUserPropertiesDto? propertiesDto = null
+    )
+    {
+        return new AuthServiceUser
+        {
+            UserName = NormalizeUserName(importUsername),
+            Email = BuildEmail(importUsername, "reconext.com"),
+            DisplayName = BuildDisplayName(importUsername),
+            OfficeLocation = string.Empty,
+
+            AppSettings = settingsDto is null
+                ? CreateDefaultSettings()
+                : CreateSettings(settingsDto),
+            CustomProperties = propertiesDto is null
+                ? CreateDefaultProperties()
+                : CreateProperties(propertiesDto),
+        };
+    }
 
     public static AuthServiceUser CreateFromLdap(LdapUser ldapUser)
     {
@@ -23,6 +47,7 @@ public class AuthServiceUser : IdentityUser
             OfficeLocation = ldapUser.OfficeLocation,
 
             AppSettings = CreateDefaultSettings(),
+            CustomProperties = CreateDefaultProperties(),
         };
     }
 
@@ -32,6 +57,9 @@ public class AuthServiceUser : IdentityUser
         Email = BuildEmail(ldapUser.Username, ldapUser.Domain);
         DisplayName = BuildDisplayName(ldapUser.Username);
         OfficeLocation = ldapUser.OfficeLocation;
+
+        AppSettings ??= CreateDefaultSettings();
+        CustomProperties ??= CreateDefaultProperties();
 
         return this;
     }
@@ -46,6 +74,7 @@ public class AuthServiceUser : IdentityUser
             OfficeLocation = graphUser.OfficeLocation,
 
             AppSettings = CreateDefaultSettings(),
+            CustomProperties = CreateDefaultProperties(),
         };
     }
 
@@ -56,12 +85,16 @@ public class AuthServiceUser : IdentityUser
         DisplayName = BuildDisplayName(graphUser.Username);
         OfficeLocation = graphUser.OfficeLocation;
 
+        AppSettings ??= CreateDefaultSettings();
+        CustomProperties ??= CreateDefaultProperties();
+
         return this;
     }
 
     private static string BuildDisplayName(string username)
     {
-        var usernameParts = username.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        var usernameParts = NormalizeUserName(username)
+            .Split('.', StringSplitOptions.RemoveEmptyEntries);
         var uppercaseUsernameParts = usernameParts
             .Select(p => char.ToUpper(p[0]) + p.Substring(1))
             .ToArray();
@@ -80,8 +113,15 @@ public class AuthServiceUser : IdentityUser
 
     private static string BuildEmail(string username, string domain)
     {
-        return NormalizeEmail($"{username}@{domain}");
+        return NormalizeEmail($"{NormalizeUserName(username)}@{domain}");
     }
 
     private static AuthServiceUserAppSettings CreateDefaultSettings() => new();
+
+    private static AuthServiceUserAppSettings CreateSettings(UpdateUserSettingsDto dto) => new(dto);
+
+    private static AuthServiceUserCustomProperties CreateDefaultProperties() => new();
+
+    private static AuthServiceUserCustomProperties CreateProperties(UpdateUserPropertiesDto dto) =>
+        new(dto);
 }
