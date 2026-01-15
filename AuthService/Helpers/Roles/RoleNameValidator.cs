@@ -31,6 +31,15 @@ public static partial class RoleNameValidator
             return false;
         }
 
+        if (role.Tool.Contains('.'))
+        {
+            error = new ErrorResponseDto
+            {
+                Error = $"Tool '{role.Tool}' cannot contain '.' character.",
+            };
+            return false;
+        }
+
         if (!RoleAccessLevel.IsValid(role.Access))
         {
             error = new ErrorResponseDto { Error = $"Unknown access level: {role.Access}." };

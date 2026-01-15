@@ -91,7 +91,8 @@ public class UsersController(
     [HttpGet("many/{includeSettings:bool}/{includeProperties:bool}")]
     public async Task<ActionResult<GetUsersResponseDto>> GetUsers(
         bool includeSettings,
-        bool includeProperties
+        bool includeProperties,
+        [FromQuery] string? whereOfficeLocation
     )
     {
         IQueryable<AuthServiceUser> query = _userManager.Users;
@@ -101,6 +102,9 @@ public class UsersController(
 
         if (includeProperties)
             query = query.Include(u => u.CustomProperties);
+
+        if (!string.IsNullOrWhiteSpace(whereOfficeLocation))
+            query = query.Where(u => u.OfficeLocation == whereOfficeLocation);
 
         List<AuthServiceUser> users = await query.ToListAsync();
         List<AuthServiceUserDto> passports = [.. users.Select(u => new AuthServiceUserDto(u))];
@@ -347,6 +351,28 @@ public class UsersController(
 
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
+
+        if (dto.Tool.Contains('.'))
+        {
+            return BadRequest(
+                new ErrorResponseDto
+                {
+                    Error = "Tool cannot contain '.' character.",
+                    Details = dto.Privilege,
+                }
+            );
+        }
+
+        if (dto.Privilege.Contains('.'))
+        {
+            return BadRequest(
+                new ErrorResponseDto
+                {
+                    Error = "Privilege cannot contain '.' character.",
+                    Details = dto.Privilege,
+                }
+            );
+        }
 
         var userClaimValue = $"user.{dto.Tool.ToLower()}.{dto.Privilege.ToLower()}";
 
