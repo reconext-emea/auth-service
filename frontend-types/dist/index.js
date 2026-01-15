@@ -22,15 +22,22 @@ export var UsersService;
             super();
             this.baseUrl = this.getBaseUrl(environment === "Development");
         }
-        async getMany(includeSettings) {
-            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/many/${!!includeSettings}`, {
+        async getMany(includeSettings, includeProperties, whereOfficeLocation) {
+            const params = new URLSearchParams();
+            if (whereOfficeLocation) {
+                params.append("whereOfficeLocation", whereOfficeLocation);
+            }
+            const queryString = params.toString();
+            const url = `${this.baseUrl}/api/users/many/${!!includeSettings}/${!!includeProperties}` +
+                (queryString ? `?${queryString}` : "");
+            const clientResponse = await UsersClient.fetch(url, {
                 method: "GET",
                 headers: { "Content-Type": "application/json; charset=utf-8" },
             });
             return clientResponse.json();
         }
-        async getOne(userIdentifier, includeSettings) {
-            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/one/${userIdentifier}/${!!includeSettings}`, {
+        async getOne(userIdentifier, includeSettings, includeProperties) {
+            const clientResponse = await UsersClient.fetch(`${this.baseUrl}/api/users/one/${userIdentifier}/${!!includeSettings}/${!!includeProperties}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json; charset=utf-8" },
             });

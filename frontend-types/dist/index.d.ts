@@ -40,8 +40,12 @@ export declare namespace UsersService {
         preferredLanguageCode: PreferredLanguageCode;
         colorThemeCode: ColorThemeCode;
     }
+    interface IProperties {
+        confidentiality: string;
+    }
     type PutSettings = ISettings;
     type UserSettings<WithSettings> = WithSettings extends true ? ISettings : null;
+    type UserProperties<WithProperties> = WithProperties extends true ? IProperties : null;
     /**
      * Id (e.g., **123e4567-e89b-12d3-a456-426614174000**)
      *
@@ -51,13 +55,14 @@ export declare namespace UsersService {
      *
      * Display Name (e.g., **Marian Pazdzioch**)
      */
-    interface IUser<WithSettings> {
+    interface IUser<WithSettings, WithProperties> {
         id: string;
         userName: string;
         email: string;
         displayName: string;
         officeLocation: OfficeLocation;
         appSettings: UserSettings<WithSettings>;
+        customProperties: UserProperties<WithProperties>;
     }
     type UserClaims = string[];
     type RoleClaims = string[];
@@ -65,8 +70,8 @@ export declare namespace UsersService {
         userClaims: UserClaims;
         roleClaims: RoleClaims;
     }
-    type GetManyResponse<WithSettings> = IUser<WithSettings>[];
-    type GetOneResponse<WithSettings> = IUser<WithSettings>;
+    type GetManyResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>[];
+    type GetOneResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>;
     interface IMessage {
         message: string;
     }
@@ -84,8 +89,8 @@ export declare namespace UsersService {
         private baseUrl;
         private getBaseUrl;
         constructor(environment?: "Development" | "Production");
-        getMany<WithSettings extends true | null>(includeSettings: WithSettings): Promise<GetManyResponse<WithSettings>>;
-        getOne<WithSettings extends true | null>(userIdentifier: string, includeSettings: WithSettings): Promise<GetOneResponse<WithSettings>>;
+        getMany<WithSettings extends true | null, WithProperties extends true | null>(includeSettings: WithSettings, includeProperties: WithProperties, whereOfficeLocation?: string): Promise<GetManyResponse<WithSettings, WithProperties>>;
+        getOne<WithSettings extends true | null, WithProperties extends true | null>(userIdentifier: string, includeSettings: WithSettings, includeProperties: WithProperties): Promise<GetOneResponse<WithSettings, WithProperties>>;
         putSettings(userIdentifier: string, userSettings: PutSettings): Promise<PutSettingsResponse>;
         getClaims(userIdentifier: string): Promise<GetClaimsResponse>;
         deleteUserClaim(userIdentifier: string, userClaimValue: string): Promise<DeleteClaimResponse>;
