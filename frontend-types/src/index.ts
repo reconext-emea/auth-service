@@ -70,9 +70,14 @@ export namespace UsersService {
     colorThemeCode: ColorThemeCode;
   }
 
+  export interface IProperties {
+    confidentiality: string;
+  }
+
   export type PutSettings = ISettings;
 
   export type UserSettings<WithSettings> = WithSettings extends true ? ISettings : null;
+  export type UserProperties<WithProperties> = WithProperties extends true ? IProperties : null;
 
   /**
    * Id (e.g., **123e4567-e89b-12d3-a456-426614174000**)
@@ -83,13 +88,14 @@ export namespace UsersService {
    *
    * Display Name (e.g., **Marian Pazdzioch**)
    */
-  export interface IUser<WithSettings> {
+  export interface IUser<WithSettings, WithProperties> {
     id: string;
     userName: string;
     email: string;
     displayName: string;
     officeLocation: OfficeLocation;
     appSettings: UserSettings<WithSettings>;
+    customProperties: UserProperties<WithProperties>;
   }
 
   export type UserClaims = string[];
@@ -99,9 +105,9 @@ export namespace UsersService {
     roleClaims: RoleClaims;
   }
 
-  export type GetManyResponse<WithSettings> = IUser<WithSettings>[];
+  export type GetManyResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>[];
 
-  export type GetOneResponse<WithSettings> = IUser<WithSettings>;
+  export type GetOneResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>;
 
   export interface IMessage {
     message: string;
@@ -134,27 +140,40 @@ export namespace UsersService {
       this.baseUrl = this.getBaseUrl(environment === "Development");
     }
 
-    async getMany<WithSettings extends true | null>(
-      includeSettings: WithSettings
-    ): Promise<GetManyResponse<WithSettings>> {
-      const clientResponse: Common.ClientResponse<GetManyResponse<WithSettings>> =
-        await UsersClient.fetch<GetManyResponse<WithSettings>>(
-          `${this.baseUrl}/api/users/many/${!!includeSettings}`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-          }
-        );
+    async getMany<WithSettings extends true | null, WithProperties extends true | null>(
+      includeSettings: WithSettings,
+      includeProperties: WithProperties,
+      whereOfficeLocation?: string
+    ): Promise<GetManyResponse<WithSettings, WithProperties>> {
+      const params = new URLSearchParams();
+
+      if (whereOfficeLocation) {
+        params.append("whereOfficeLocation", whereOfficeLocation);
+      }
+
+      const queryString = params.toString();
+      const url =
+        `${this.baseUrl}/api/users/many/${!!includeSettings}/${!!includeProperties}` +
+        (queryString ? `?${queryString}` : "");
+
+      const clientResponse: Common.ClientResponse<GetManyResponse<WithSettings, WithProperties>> =
+        await UsersClient.fetch<GetManyResponse<WithSettings, WithProperties>>(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+        });
       return clientResponse.json();
     }
 
-    async getOne<WithSettings extends true | null>(
+    async getOne<WithSettings extends true | null, WithProperties extends true | null>(
       userIdentifier: string,
-      includeSettings: WithSettings
-    ): Promise<GetOneResponse<WithSettings>> {
-      const clientResponse: Common.ClientResponse<GetOneResponse<WithSettings>> =
-        await UsersClient.fetch<GetOneResponse<WithSettings>>(
-          `${this.baseUrl}/api/users/one/${userIdentifier}/${!!includeSettings}`,
+      includeSettings: WithSettings,
+      includeProperties: WithProperties
+    ): Promise<GetOneResponse<WithSettings, WithProperties>> {
+      const clientResponse: Common.ClientResponse<GetOneResponse<WithSettings, WithProperties>> =
+        await UsersClient.fetch<GetOneResponse<WithSettings, WithProperties>>(
+          `${
+            this.baseUrl
+          }/api/users/one/${userIdentifier}/${!!includeSettings}/${!!includeProperties}`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json; charset=utf-8" },
