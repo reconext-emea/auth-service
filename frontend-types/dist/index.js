@@ -20,7 +20,7 @@ export var UsersService;
         }
         constructor(environment = "Development") {
             super();
-            this.baseUrl = this.getBaseUrl(environment === "Development");
+            this.baseUrl = this.getBaseUrl(typeof environment === "boolean" ? environment : environment === "Development");
         }
         async getMany(includeSettings, includeProperties, whereOfficeLocation) {
             const params = new URLSearchParams();

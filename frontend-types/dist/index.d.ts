@@ -88,7 +88,7 @@ export declare namespace UsersService {
         private static readonly DEVELOPMENT_ORIGIN;
         private baseUrl;
         private getBaseUrl;
-        constructor(environment?: "Development" | "Production");
+        constructor(environment?: "Development" | "Production" | boolean);
         getMany<WithSettings extends true | null, WithProperties extends true | null>(includeSettings: WithSettings, includeProperties: WithProperties, whereOfficeLocation?: string): Promise<GetManyResponse<WithSettings, WithProperties>>;
         getOne<WithSettings extends true | null, WithProperties extends true | null>(userIdentifier: string, includeSettings: WithSettings, includeProperties: WithProperties): Promise<GetOneResponse<WithSettings, WithProperties>>;
         putSettings(userIdentifier: string, userSettings: PutSettings): Promise<PutSettingsResponse>;
