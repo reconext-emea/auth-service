@@ -135,9 +135,11 @@ export namespace UsersService {
       return `${development ? UsersClient.DEVELOPMENT_ORIGIN : UsersClient.ORIGIN}`;
     }
 
-    constructor(environment: "Development" | "Production" = "Development") {
+    constructor(environment: "Development" | "Production" | boolean = "Development") {
       super();
-      this.baseUrl = this.getBaseUrl(environment === "Development");
+      this.baseUrl = this.getBaseUrl(
+        typeof environment === "boolean" ? environment : environment === "Development"
+      );
     }
 
     async getMany<WithSettings extends true | null, WithProperties extends true | null>(
