@@ -52,6 +52,29 @@ public class AuthServiceDbContext(DbContextOptions<AuthServiceDbContext> options
             .Property(s => s.Confidentiality)
             .HasDefaultValue(ConfidentialityClass.Class1);
 
+        builder
+            .Entity<AuthServiceUserCustomProperties>()
+            .Property(s => s.Region)
+            .HasDefaultValue(string.Empty);
+
+        builder.Entity<AuthServiceUser>(b =>
+        {
+            b.Property(u => u.EmployeeId)
+                .HasMaxLength(64)
+                .HasDefaultValue(string.Empty)
+                .IsRequired();
+
+            b.Property(u => u.Department)
+                .HasMaxLength(256)
+                .HasDefaultValue(string.Empty)
+                .IsRequired();
+
+            b.Property(u => u.JobTitle)
+                .HasMaxLength(256)
+                .HasDefaultValue(string.Empty)
+                .IsRequired();
+        });
+
         builder.Entity<AuthError>().ToTable("AuthErrors");
     }
 }

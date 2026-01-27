@@ -69,6 +69,34 @@ public class ClaimsPrincipalFactory(
             )
         );
 
+        identity.AddClaim(
+            new Claim("region", user.CustomProperties.Region).SetDestinations(
+                Destinations.AccessToken,
+                Destinations.IdentityToken
+            )
+        );
+
+        identity.AddClaim(
+            new Claim("employeeId", user.EmployeeId).SetDestinations(
+                Destinations.AccessToken,
+                Destinations.IdentityToken
+            )
+        );
+
+        identity.AddClaim(
+            new Claim("department", user.Department).SetDestinations(
+                Destinations.AccessToken,
+                Destinations.IdentityToken
+            )
+        );
+
+        identity.AddClaim(
+            new Claim("jobTitle", user.JobTitle).SetDestinations(
+                Destinations.AccessToken,
+                Destinations.IdentityToken
+            )
+        );
+
         // ---------- LOAD USER "role" ----------
         var roles = await _userManager.GetRolesAsync(user);
 

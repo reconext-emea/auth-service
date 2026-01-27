@@ -1,0 +1,2220 @@
+{
+  "users": [
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "adrian.butowt"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "agnieszka.murawska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "agnieszka.olszewska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "agnieszka.wedzierska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "agnieszka.wojtas"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "agnieszka.zakrzewska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "albert.maggay"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "alberto.tabor"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "alevtyna.marchenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "alice.aguilar"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "alicja.walentowicz"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "alina.kashchenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "alina.prodan"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "alina.yezhel"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "almira.pacala"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "anastasiia.fedorova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "anastasiia.khludova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Capa",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "andrea.carletti"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "andrei.zhukau"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "andrii.lashko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "andrzej.smiechowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "anna.byczek"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "anna.fons"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Abs",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Admin",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Capa",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "anna.gandziarowska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "argie.santisima"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "artur.filas"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "artur.piotrowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "bartek.marciniak"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "bartosz.drapala"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "beata.duczmal"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "beata.wisniewska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "brian.kinsley"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "b.zastepowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "cristina.adelan"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "damian.laskowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "danylo.zhyr"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "dariia.semykop"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "darwin.leon"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "dawid.bronczyk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "dawid.kolber"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "diana.zibrova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "dmytro.fysun"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "dmytro.klymenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "dmytro.martseniuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "dominika.szudzik"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "dominik.kurowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "dorota.lemanska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "eddie.baraya"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "elwira.kowalska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Admin",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Capa",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "eric.perez"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "erika.gimeno"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "ewelina.malankowska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "ewelina.wantowska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "filip.wolanin"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "george.kay"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "gimeno.stephanie"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "grzegorz.romanowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "guneet.singh"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "halyna.lyndiuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "halyna.voitenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "hanna.hremliatska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "inna.hrynchuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "inna.pankova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "iryna.bohatiuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "iryna.zamkova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "ivan.ruban"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "james.littlewood"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "jana.fukova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "jaroslaw.meka"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "jessika.rybak"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "joanna.swietlik"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "kacper.jedlinski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "kacper.urbanowicz"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "kamila.dereniowska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "kamil.baczynski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "karol.bieschke"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "karol.machcinski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "karol.wolski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "katarzyna.zaremba"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "kateryna.knyha"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "kateryna.kostomakha"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "k.charnetskaya"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "k.kwiatkowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "k.margusiewicz"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "k.matroshylova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "kristy.descutido"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "krzysztof.gackowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "krzysztof.nowicki"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "krzysztof.weber"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "ksawery.salwin"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "liliia.haichenia"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "liudmila.statkevich"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "liudmyla.rosynska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "lukasz.grzybowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "lukasz.krawczynski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "maciej.liczmanski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "maciej.ratajczak"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Abs",
+          "access": "Administrator"
+        },
+        {
+          "tool": "Admin",
+          "access": "Administrator"
+        },
+        {
+          "tool": "Analytic",
+          "access": "Administrator"
+        },
+        {
+          "tool": "Capa",
+          "access": "Administrator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Administrator"
+        }
+      ],
+      "username": "maciej.zablocki"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "maksym.chabai"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "maksym.hertsiuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "marcin.byrtek"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "marcin.superczynski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "marek.ceglarski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "marek.ilczuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "marek.wolanski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "maria.capacia"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mariia.lyndiuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mariia.polishchuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mark.jamandra"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "marta.retkowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "martina.charitunova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Capa",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "martin.zigmond"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "maryna.harkavets"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mateusz.futerko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mateusz.godlewski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mateusz.kusio"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mateusz.lasota"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mateusz.welninski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mateusz.wlodarczak"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "michal.gabryelski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "michal.grodkiewicz"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "michal.padysak"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "michal.zarebski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mikolaj.brall"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "miroslav.kubesch"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "miroslav.miklas"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "monika.rucinska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mykola.bovniei"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "mylana.zavoritna"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "myra.lasala"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "natalia.hoppe"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "natalia.kodos"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "nataliia.ivanova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "nataliia.zhelizna"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "oksana.jakovlieva"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "oksana.tytarenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "oksana.ustianovska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "oleksandr.durniev"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "oleksandr.romaniuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olena.molchanova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olena.orieshkova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olena.stetsenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olha.bulat"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olha.durkach"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olha.holoborodko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olha.knyha"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olha.malakhova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olha.nychyporuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "olha.smetanko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "o.malivanets"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "osmena.altavas"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "patrycja.banach"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "patryk.tomczuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "paulina.koper"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "pawel.jesiolowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "pawel.lawrenz"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Admin",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "peter.minarik"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "petr.devera"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Abs",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Admin",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Capa",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "petr.koukal"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "petro.boichuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "radka.semecka"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Abs",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Capa",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "radka.ucnova"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "radoslaw.wamka"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "rafal.kobylecki"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "rafal.palacz"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "remigiusz.gorski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "remigiusz.pawlowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "rica.policarpio"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Admin",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "roma.kuberska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "roman.rudenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "ruslan.pedchenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "samanta.dabrowska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "sandra.hebel"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "s.cherednychenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "sebastian.gorski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "sebastian.proch"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "sebastian.winiarski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Abs",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Capa",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "serge.willemse"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Abs",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Admin",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Capa",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "sigrid.castillo"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "svitlana.konopolska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "sylwia.siudzinska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "tamila.kotivets"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "taras.kupar"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "tatiana.boichuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "tatiana.zarudenska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "tomas.lang"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Abs",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "tomas.masopust"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "tomasz.mikolajewski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "tomasz.opasinski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "tomasz.skalecki"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "tomasz.woelke"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "tomasz.zawadzki"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "vaclav.cup"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "vadym.klymchuk"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "viktoriia.naidenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "vitalii.oryshchak"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "vladyslav.lisovskyi"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        },
+        {
+          "tool": "Tcd",
+          "access": "Moderator"
+        }
+      ],
+      "username": "waldemar.wesolowski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "wojciech.karpinski"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
+        },
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "wojciech.kryszak"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "yehveniia.pymonenko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "yevheniia.honchar"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "yevhen.miadelko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "yevhen.voropaiev"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "yuliia.prykhodko"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "yuliia.shatska"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "yuliia.sliusar"
+    },
+    {
+      "roles": [
+        {
+          "tool": "Documents",
+          "access": "Reader"
+        }
+      ],
+      "username": "yurii.batsanskyi"
+    }
+  ]
+}

@@ -235,17 +235,19 @@ public class UsersController(
 
         if (user.CustomProperties == null)
         {
-            var properties = new AuthServiceUserCustomProperties
-            {
-                Id = user.Id,
-                Confidentiality = dto.Confidentiality,
-                User = user,
-            };
+            var properties = new AuthServiceUserCustomProperties(user, dto);
+            // {
+            //     Id = user.Id,
+            //     Confidentiality = dto.Confidentiality,
+            //     User = user,
+            // };
+
             _dbContext.AspNetUsersCustomProperties.Add(properties);
         }
         else
         {
-            user.CustomProperties.Confidentiality = dto.Confidentiality;
+            user.CustomProperties.UpdateProperties(user, dto);
+            // user.CustomProperties.Confidentiality = dto.Confidentiality;
         }
 
         await _dbContext.SaveChangesAsync();

@@ -9,6 +9,9 @@ public class AuthServiceUser : IdentityUser
 {
     public string DisplayName { get; private set; } = null!;
     public string OfficeLocation { get; private set; } = null!;
+    public string EmployeeId { get; private set; } = null!;
+    public string Department { get; private set; } = null!;
+    public string JobTitle { get; private set; } = null!;
 
     public AuthServiceUserAppSettings AppSettings { get; set; } = null!;
     public AuthServiceUserCustomProperties CustomProperties { get; set; } = null!;
@@ -17,23 +20,26 @@ public class AuthServiceUser : IdentityUser
 
     public static AuthServiceUser CreateFromImport(
         string importUsername,
-        UpdateUserSettingsDto? settingsDto = null,
-        UpdateUserPropertiesDto? propertiesDto = null
+        UpdateUserSettingsDto? settingsDto = null
     )
     {
         return new AuthServiceUser
         {
             UserName = NormalizeUserName(importUsername),
-            Email = BuildEmail(importUsername, "reconext.com"),
-            DisplayName = BuildDisplayName(importUsername),
+            Email = string.Empty,
+            // DisplayName = BuildDisplayName(importUsername),
+            DisplayName = string.Empty,
+
+            EmployeeId = string.Empty,
+            Department = string.Empty,
+            JobTitle = string.Empty,
+
             OfficeLocation = string.Empty,
 
             AppSettings = settingsDto is null
                 ? CreateDefaultSettings()
                 : CreateSettings(settingsDto),
-            CustomProperties = propertiesDto is null
-                ? CreateDefaultProperties()
-                : CreateProperties(propertiesDto),
+            CustomProperties = CreateDefaultProperties(),
         };
     }
 
@@ -43,8 +49,14 @@ public class AuthServiceUser : IdentityUser
         {
             UserName = NormalizeUserName(ldapUser.Username),
             Email = BuildEmail(ldapUser.Username, ldapUser.Domain),
-            DisplayName = BuildDisplayName(ldapUser.Username),
-            OfficeLocation = ldapUser.OfficeLocation,
+            // DisplayName = BuildDisplayName(ldapUser.Username),
+            DisplayName = ldapUser.Attributes.DisplayName,
+
+            EmployeeId = ldapUser.Attributes.EmployeeId,
+            Department = ldapUser.Attributes.Department,
+            JobTitle = ldapUser.Attributes.JobTitle,
+
+            OfficeLocation = ldapUser.Attributes.OfficeLocation,
 
             AppSettings = CreateDefaultSettings(),
             CustomProperties = CreateDefaultProperties(),
@@ -55,11 +67,21 @@ public class AuthServiceUser : IdentityUser
     {
         UserName = NormalizeUserName(ldapUser.Username);
         Email = BuildEmail(ldapUser.Username, ldapUser.Domain);
-        DisplayName = BuildDisplayName(ldapUser.Username);
-        OfficeLocation = ldapUser.OfficeLocation;
+        // DisplayName = BuildDisplayName(ldapUser.Username),
+        DisplayName = ldapUser.Attributes.DisplayName;
+
+        EmployeeId = ldapUser.Attributes.EmployeeId;
+        Department = ldapUser.Attributes.Department;
+        JobTitle = ldapUser.Attributes.JobTitle;
+
+        OfficeLocation = ldapUser.Attributes.OfficeLocation;
 
         AppSettings ??= CreateDefaultSettings();
-        CustomProperties ??= CreateDefaultProperties();
+
+        if (CustomProperties is not null)
+            CustomProperties.UpdateProperties(this, null);
+        else
+            CustomProperties = CreateDefaultProperties();
 
         return this;
     }
@@ -70,8 +92,14 @@ public class AuthServiceUser : IdentityUser
         {
             UserName = NormalizeUserName(graphUser.Username),
             Email = NormalizeEmail(graphUser.Mail),
-            DisplayName = BuildDisplayName(graphUser.Username),
-            OfficeLocation = graphUser.OfficeLocation,
+            // DisplayName = BuildDisplayName(graphUser.Username),
+            DisplayName = graphUser.Attributes.DisplayName,
+
+            EmployeeId = graphUser.Attributes.EmployeeId,
+            Department = graphUser.Attributes.Department,
+            JobTitle = graphUser.Attributes.JobTitle,
+
+            OfficeLocation = graphUser.Attributes.OfficeLocation,
 
             AppSettings = CreateDefaultSettings(),
             CustomProperties = CreateDefaultProperties(),
@@ -82,24 +110,34 @@ public class AuthServiceUser : IdentityUser
     {
         UserName = NormalizeUserName(graphUser.Username);
         Email = NormalizeEmail(graphUser.Mail);
-        DisplayName = BuildDisplayName(graphUser.Username);
-        OfficeLocation = graphUser.OfficeLocation;
+        // DisplayName = BuildDisplayName(graphUser.Username),
+        DisplayName = graphUser.Attributes.DisplayName;
+
+        EmployeeId = graphUser.Attributes.EmployeeId;
+        Department = graphUser.Attributes.Department;
+        JobTitle = graphUser.Attributes.JobTitle;
+
+        OfficeLocation = graphUser.Attributes.OfficeLocation;
 
         AppSettings ??= CreateDefaultSettings();
-        CustomProperties ??= CreateDefaultProperties();
+
+        if (CustomProperties is not null)
+            CustomProperties.UpdateProperties(this, null);
+        else
+            CustomProperties = CreateDefaultProperties();
 
         return this;
     }
 
-    private static string BuildDisplayName(string username)
-    {
-        var usernameParts = NormalizeUserName(username)
-            .Split('.', StringSplitOptions.RemoveEmptyEntries);
-        var uppercaseUsernameParts = usernameParts
-            .Select(p => char.ToUpper(p[0]) + p.Substring(1))
-            .ToArray();
-        return string.Join(" ", uppercaseUsernameParts);
-    }
+    // private static string BuildDisplayName(string username)
+    // {
+    //     var usernameParts = NormalizeUserName(username)
+    //         .Split('.', StringSplitOptions.RemoveEmptyEntries);
+    //     var uppercaseUsernameParts = usernameParts
+    //         .Select(p => char.ToUpper(p[0]) + p.Substring(1))
+    //         .ToArray();
+    //     return string.Join(" ", uppercaseUsernameParts);
+    // }
 
     private static string NormalizeUserName(string username)
     {
@@ -121,7 +159,4 @@ public class AuthServiceUser : IdentityUser
     private static AuthServiceUserAppSettings CreateSettings(UpdateUserSettingsDto dto) => new(dto);
 
     private static AuthServiceUserCustomProperties CreateDefaultProperties() => new();
-
-    private static AuthServiceUserCustomProperties CreateProperties(UpdateUserPropertiesDto dto) =>
-        new(dto);
 }

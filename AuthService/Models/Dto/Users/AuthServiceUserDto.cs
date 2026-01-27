@@ -7,6 +7,10 @@ public class AuthServiceUserDto
     public string Email { get; private set; }
     public string DisplayName { get; private set; }
     public string OfficeLocation { get; private set; }
+
+    public string EmployeeId { get; private set; }
+    public string Department { get; private set; }
+    public string JobTitle { get; private set; }
     public AuthServiceUserSettingsDto? AppSettings { get; private set; }
     public AuthServiceUserCustomPropertiesDto? CustomProperties { get; private set; }
 
@@ -17,6 +21,9 @@ public class AuthServiceUserDto
         Email = user.Email!;
         DisplayName = user.DisplayName;
         OfficeLocation = user.OfficeLocation;
+        EmployeeId = user.EmployeeId;
+        Department = user.Department;
+        JobTitle = user.JobTitle;
 
         if (user.AppSettings != null)
         {

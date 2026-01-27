@@ -12,11 +12,13 @@ public static partial class RoleNameValidator
         if (string.IsNullOrWhiteSpace(value))
             return false;
 
-        return PascalCaseRegex().IsMatch(value);
+        return PascalCaseRegex.IsMatch(value);
     }
 
-    [GeneratedRegex("^[A-Z][a-z]+(?:[A-Z][a-z]+)*$")]
-    private static partial Regex PascalCaseRegex();
+    private static readonly Regex PascalCaseRegex = new(
+        @"^[A-Z][a-z]+(?:[A-Z][a-z]+)*$",
+        RegexOptions.Compiled
+    );
 
     public static bool IsValid(CreateRoleDto role, out string name, out ErrorResponseDto error)
     {
