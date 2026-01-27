@@ -23,7 +23,7 @@ export declare namespace UsersService {
      *
      * **Supposed to be adjusted accordingly to changes.**
      */
-    type OfficeLocation = "Bydgoszcz Site (PL)" | "Havant Site (UK)" | "Prague Site (CZ)" | "REMOTE / HOME OFFICE" | "Tallinn Site (EE)" | "Zoetermeer Site (NL)";
+    type EmeaOfficeLocation = "Bydgoszcz Site (PL)" | "Havant Site (UK)" | "Prague Site (CZ)" | "REMOTE / HOME OFFICE" | "Tallinn Site (EE)" | "Zoetermeer Site (NL)";
     /**
      * List of allowed preferred language codes, based on: AuthService.Constants.PreferredLanguage.
      *
@@ -60,7 +60,7 @@ export declare namespace UsersService {
         userName: string;
         email: string;
         displayName: string;
-        officeLocation: OfficeLocation;
+        officeLocation: EmeaOfficeLocation;
         appSettings: UserSettings<WithSettings>;
         customProperties: UserProperties<WithProperties>;
     }
@@ -70,8 +70,6 @@ export declare namespace UsersService {
         userClaims: UserClaims;
         roleClaims: RoleClaims;
     }
-    type GetManyResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>[];
-    type GetOneResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>;
     interface IMessage {
         message: string;
     }
@@ -89,8 +87,8 @@ export declare namespace UsersService {
         private baseUrl;
         private getBaseUrl;
         constructor(environment?: "Development" | "Production" | boolean);
-        getMany<WithSettings extends true | null, WithProperties extends true | null>(includeSettings: WithSettings, includeProperties: WithProperties, whereOfficeLocation?: string): Promise<GetManyResponse<WithSettings, WithProperties>>;
-        getOne<WithSettings extends true | null, WithProperties extends true | null>(userIdentifier: string, includeSettings: WithSettings, includeProperties: WithProperties): Promise<GetOneResponse<WithSettings, WithProperties>>;
+        getMany<WithSettings extends true | null, WithProperties extends true | null>(includeSettings: WithSettings, includeProperties: WithProperties, whereOfficeLocation?: string): Promise<IUser<WithSettings, WithProperties>[]>;
+        getOne<WithSettings extends true | null, WithProperties extends true | null>(userIdentifier: string, includeSettings: WithSettings, includeProperties: WithProperties): Promise<IUser<WithSettings, WithProperties>>;
         putSettings(userIdentifier: string, userSettings: PutSettings): Promise<PutSettingsResponse>;
         getClaims(userIdentifier: string): Promise<GetClaimsResponse>;
         deleteUserClaim(userIdentifier: string, userClaimValue: string): Promise<DeleteClaimResponse>;
@@ -344,7 +342,7 @@ export declare namespace AuthService {
          */
         isAuthError(error: unknown): error is IAuthError;
         /**
-         * Saves an error to the backend's `/api/error-log` endpoint for administrative diagnostics.
+         * Saves an error to the backend's `/api/auth-error` endpoint for administrative diagnostics.
          *
          * A unique reference ID is generated and returned to the caller.
          * This ID is safe to show to end users so that administrators can

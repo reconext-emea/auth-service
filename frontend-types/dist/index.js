@@ -163,8 +163,7 @@ export var AuthService;
                 msalConfig !== null ? AuthIntranetClient.ORIGIN : AuthIntranetClient.TEST_ORIGIN;
             client.jwksHost =
                 msalConfig !== null ? AuthIntranetClient.ORIGIN : "http://host.docker.internal:5081";
-            client.jwks = createRemoteJWKSet(new URL(`${client.jwksHost}/.well-known/jwks`) // ${client.endpoint}
-            );
+            client.jwks = createRemoteJWKSet(new URL(`${client.jwksHost}/.well-known/jwks`));
             client.msal = new MsalBrowser({
                 authority: AuthIntranetClient.AUTHORITY,
                 clientId: AuthIntranetClient.CLIENT_ID,
@@ -300,7 +299,7 @@ export var AuthService;
                 typeof error?.error_description === "string");
         }
         /**
-         * Saves an error to the backend's `/api/error-log` endpoint for administrative diagnostics.
+         * Saves an error to the backend's `/api/auth-error` endpoint for administrative diagnostics.
          *
          * A unique reference ID is generated and returned to the caller.
          * This ID is safe to show to end users so that administrators can
@@ -311,7 +310,7 @@ export var AuthService;
          */
         async saveErrorAsync(error) {
             const reference = crypto.randomUUID();
-            await fetch(`${this.host}/api/error-log`, {
+            await fetch(`${this.host}/api/auth-error`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -371,15 +370,19 @@ export var AuthService;
                 const { payload } = await jwtVerify(token, this.jwks, {
                     issuer: `${this.host}/`,
                 });
-                const { sub, username, email, office_location, confidentiality, permission, role } = payload;
+                const { sub, username, email, office_location, confidentiality, region, employeeId, department, jobTitle, permission, role, } = payload;
                 const passport = {
-                    uuid: sub,
-                    username: username,
-                    email: email,
-                    office_location: office_location,
-                    confidentiality: confidentiality,
-                    permission: permission,
-                    role: role,
+                    uuid: String(sub),
+                    username: String(username),
+                    email: String(email),
+                    office_location: String(office_location),
+                    confidentiality: String(confidentiality),
+                    region: String(region),
+                    employeeId: String(employeeId),
+                    department: String(department),
+                    jobTitle: String(jobTitle),
+                    permission: Array.isArray(permission) ? permission.map((p) => String(p)) : [],
+                    role: Array.isArray(role) ? role.map((r) => String(r)) : [],
                 };
                 return { payload, passport };
             }
