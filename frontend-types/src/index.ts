@@ -105,9 +105,13 @@ export namespace UsersService {
     roleClaims: RoleClaims;
   }
 
-  // export type GetManyResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>[];
+  export type GetManyResponse<WithSettings, WithProperties> = {
+    users: IUser<WithSettings, WithProperties>[];
+  };
 
-  // export type GetOneResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>;
+  export type GetOneResponse<WithSettings, WithProperties> = {
+    user: IUser<WithSettings, WithProperties>;
+  };
 
   export interface IMessage {
     message: string;
@@ -146,7 +150,7 @@ export namespace UsersService {
       includeSettings: WithSettings,
       includeProperties: WithProperties,
       whereOfficeLocation?: string,
-    ): Promise<IUser<WithSettings, WithProperties>[]> {
+    ): Promise<GetManyResponse<WithSettings, WithProperties>> {
       const params = new URLSearchParams();
 
       if (whereOfficeLocation) {
@@ -158,8 +162,8 @@ export namespace UsersService {
         `${this.baseUrl}/api/users/many/${!!includeSettings}/${!!includeProperties}` +
         (queryString ? `?${queryString}` : "");
 
-      const clientResponse: Common.ClientResponse<IUser<WithSettings, WithProperties>[]> =
-        await UsersClient.fetch<IUser<WithSettings, WithProperties>[]>(url, {
+      const clientResponse: Common.ClientResponse<GetManyResponse<WithSettings, WithProperties>> =
+        await UsersClient.fetch<GetManyResponse<WithSettings, WithProperties>>(url, {
           method: "GET",
           headers: { "Content-Type": "application/json; charset=utf-8" },
         });
@@ -170,9 +174,9 @@ export namespace UsersService {
       userIdentifier: string,
       includeSettings: WithSettings,
       includeProperties: WithProperties,
-    ): Promise<IUser<WithSettings, WithProperties>> {
-      const clientResponse: Common.ClientResponse<IUser<WithSettings, WithProperties>> =
-        await UsersClient.fetch<IUser<WithSettings, WithProperties>>(
+    ): Promise<GetOneResponse<WithSettings, WithProperties>> {
+      const clientResponse: Common.ClientResponse<GetOneResponse<WithSettings, WithProperties>> =
+        await UsersClient.fetch<GetOneResponse<WithSettings, WithProperties>>(
           `${
             this.baseUrl
           }/api/users/one/${userIdentifier}/${!!includeSettings}/${!!includeProperties}`,

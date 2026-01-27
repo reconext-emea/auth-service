@@ -70,6 +70,12 @@ export declare namespace UsersService {
         userClaims: UserClaims;
         roleClaims: RoleClaims;
     }
+    type GetManyResponse<WithSettings, WithProperties> = {
+        users: IUser<WithSettings, WithProperties>[];
+    };
+    type GetOneResponse<WithSettings, WithProperties> = {
+        user: IUser<WithSettings, WithProperties>;
+    };
     interface IMessage {
         message: string;
     }
@@ -87,8 +93,8 @@ export declare namespace UsersService {
         private baseUrl;
         private getBaseUrl;
         constructor(environment?: "Development" | "Production" | boolean);
-        getMany<WithSettings extends true | null, WithProperties extends true | null>(includeSettings: WithSettings, includeProperties: WithProperties, whereOfficeLocation?: string): Promise<IUser<WithSettings, WithProperties>[]>;
-        getOne<WithSettings extends true | null, WithProperties extends true | null>(userIdentifier: string, includeSettings: WithSettings, includeProperties: WithProperties): Promise<IUser<WithSettings, WithProperties>>;
+        getMany<WithSettings extends true | null, WithProperties extends true | null>(includeSettings: WithSettings, includeProperties: WithProperties, whereOfficeLocation?: string): Promise<GetManyResponse<WithSettings, WithProperties>>;
+        getOne<WithSettings extends true | null, WithProperties extends true | null>(userIdentifier: string, includeSettings: WithSettings, includeProperties: WithProperties): Promise<GetOneResponse<WithSettings, WithProperties>>;
         putSettings(userIdentifier: string, userSettings: PutSettings): Promise<PutSettingsResponse>;
         getClaims(userIdentifier: string): Promise<GetClaimsResponse>;
         deleteUserClaim(userIdentifier: string, userClaimValue: string): Promise<DeleteClaimResponse>;
