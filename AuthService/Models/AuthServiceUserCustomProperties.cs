@@ -11,13 +11,25 @@ public class AuthServiceUserCustomProperties
     /// Determined by Petr Koukal
     /// </summary>
     public string Confidentiality { get; set; } = ConfidentialityClass.Class1;
+    public string Region { get; set; } = string.Empty;
 
     public AuthServiceUser User { get; set; } = null!;
 
     public AuthServiceUserCustomProperties() { }
 
-    public AuthServiceUserCustomProperties(UpdateUserPropertiesDto dto)
+    public AuthServiceUserCustomProperties(AuthServiceUser user, UpdateUserPropertiesDto? dto)
     {
-        Confidentiality = dto.Confidentiality;
+        Region = OfficeLocationToRegionAdapter.GetRegionOfOfficeLocation(user.OfficeLocation);
+
+        if (!string.IsNullOrWhiteSpace(dto?.Confidentiality))
+            Confidentiality = dto.Confidentiality;
+    }
+
+    public void UpdateProperties(AuthServiceUser user, UpdateUserPropertiesDto? dto)
+    {
+        Region = OfficeLocationToRegionAdapter.GetRegionOfOfficeLocation(user.OfficeLocation);
+
+        if (!string.IsNullOrWhiteSpace(dto?.Confidentiality))
+            Confidentiality = dto.Confidentiality;
     }
 }

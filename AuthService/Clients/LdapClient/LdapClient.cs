@@ -48,11 +48,20 @@ public class LdapClient : ILdapClient
 
             LdapEntry user = await results.NextAsync();
 
-            string? officeName = user.GetStringValueOrDefault("physicalDeliveryOfficeName");
+            var attributes = user.GetAttributeSet();
+
+            var ldapAttributes = new LdapAttributes(
+                EmployeeId: user.GetStringValueOrDefault("employeeID") ?? string.Empty,
+                DisplayName: user.GetStringValueOrDefault("displayName") ?? string.Empty,
+                Department: user.GetStringValueOrDefault("department") ?? string.Empty,
+                JobTitle: user.GetStringValueOrDefault("title") ?? string.Empty,
+                OfficeLocation: user.GetStringValueOrDefault("physicalDeliveryOfficeName")
+                    ?? string.Empty
+            );
 
             if (
-                string.IsNullOrWhiteSpace(officeName)
-                || !_config.AllowedEmeaOfficeNames.Contains(officeName)
+                string.IsNullOrWhiteSpace(ldapAttributes.OfficeLocation)
+                || !_config.AllowedEmeaOfficeNames.Contains(ldapAttributes.OfficeLocation)
             )
             {
                 return new(false, LdapError.OfficeNotAllowed);
@@ -60,7 +69,7 @@ public class LdapClient : ILdapClient
 
             await connection.BindAsync(user.Dn, passport.Password);
 
-            var ldapUser = new LdapUser(passport, officeName);
+            var ldapUser = new LdapUser(passport, ldapAttributes);
 
             return new(true, null, ldapUser);
         }

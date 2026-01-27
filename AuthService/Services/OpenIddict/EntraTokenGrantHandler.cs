@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using AuthService.Clients.EntraIdClient;
 using AuthService.Clients.GraphClient;
 using AuthService.Models;
@@ -76,7 +77,21 @@ public class EntraTokenGrantHandler(
 
         try
         {
-            user = await graph.Me.GetAsync();
+            // user = await graph.Me.GetAsync();
+            user = await graph.Me.GetAsync(rc =>
+            {
+                rc.QueryParameters.Select =
+                [
+                    "id",
+                    "displayName",
+                    "userPrincipalName",
+                    "mail",
+                    "department",
+                    "jobTitle",
+                    "officeLocation",
+                    "employeeId",
+                ];
+            });
         }
         catch (Exception)
         {
@@ -98,9 +113,22 @@ public class EntraTokenGrantHandler(
             return;
         }
 
-        var graphOfficeLocation = user.OfficeLocation;
+        // Console.WriteLine("graphUser");
+        // Console.WriteLine(
+        //     JsonSerializer.Serialize(user, new JsonSerializerOptions { WriteIndented = true })
+        // );
 
-        if (string.IsNullOrWhiteSpace(graphOfficeLocation))
+        var graphAttributes = new GraphAttributes(
+            EmployeeId: user.EmployeeId ?? string.Empty,
+            DisplayName: user.DisplayName ?? string.Empty,
+            Department: user.Department ?? string.Empty,
+            JobTitle: user.JobTitle ?? string.Empty,
+            OfficeLocation: user.OfficeLocation ?? string.Empty
+        );
+
+        // var graphOfficeLocation = user.OfficeLocation;
+
+        if (string.IsNullOrWhiteSpace(graphAttributes.OfficeLocation))
         {
             var ex = new EntraIdException(EntraIdError.MissingGraphUserOfficeLocation);
             context.Reject(
@@ -151,7 +179,7 @@ public class EntraTokenGrantHandler(
             .Include(u => u.CustomProperties)
             .SingleOrDefaultAsync(u => u.NormalizedUserName == normalizedName);
 
-        var graphUser = new GraphUser(graphUsername, graphMail, graphOfficeLocation);
+        var graphUser = new GraphUser(graphUsername, graphMail, graphAttributes);
 
         if (authServiceUser == null)
         {

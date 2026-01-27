@@ -17,7 +17,7 @@ namespace Common {
   export class Client {
     protected static async fetch<T>(
       input: string | Request | URL,
-      init?: RequestInit | undefined
+      init?: RequestInit | undefined,
     ): Promise<ClientResponse<T>> {
       const response = await fetch(input, init);
 
@@ -44,7 +44,7 @@ export namespace UsersService {
    *
    * **Supposed to be adjusted accordingly to changes.**
    */
-  export type OfficeLocation =
+  export type EmeaOfficeLocation =
     | "Bydgoszcz Site (PL)"
     | "Havant Site (UK)"
     | "Prague Site (CZ)"
@@ -93,7 +93,7 @@ export namespace UsersService {
     userName: string;
     email: string;
     displayName: string;
-    officeLocation: OfficeLocation;
+    officeLocation: EmeaOfficeLocation;
     appSettings: UserSettings<WithSettings>;
     customProperties: UserProperties<WithProperties>;
   }
@@ -105,9 +105,9 @@ export namespace UsersService {
     roleClaims: RoleClaims;
   }
 
-  export type GetManyResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>[];
+  // export type GetManyResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>[];
 
-  export type GetOneResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>;
+  // export type GetOneResponse<WithSettings, WithProperties> = IUser<WithSettings, WithProperties>;
 
   export interface IMessage {
     message: string;
@@ -138,15 +138,15 @@ export namespace UsersService {
     constructor(environment: "Development" | "Production" | boolean = "Development") {
       super();
       this.baseUrl = this.getBaseUrl(
-        typeof environment === "boolean" ? environment : environment === "Development"
+        typeof environment === "boolean" ? environment : environment === "Development",
       );
     }
 
     async getMany<WithSettings extends true | null, WithProperties extends true | null>(
       includeSettings: WithSettings,
       includeProperties: WithProperties,
-      whereOfficeLocation?: string
-    ): Promise<GetManyResponse<WithSettings, WithProperties>> {
+      whereOfficeLocation?: string,
+    ): Promise<IUser<WithSettings, WithProperties>[]> {
       const params = new URLSearchParams();
 
       if (whereOfficeLocation) {
@@ -158,8 +158,8 @@ export namespace UsersService {
         `${this.baseUrl}/api/users/many/${!!includeSettings}/${!!includeProperties}` +
         (queryString ? `?${queryString}` : "");
 
-      const clientResponse: Common.ClientResponse<GetManyResponse<WithSettings, WithProperties>> =
-        await UsersClient.fetch<GetManyResponse<WithSettings, WithProperties>>(url, {
+      const clientResponse: Common.ClientResponse<IUser<WithSettings, WithProperties>[]> =
+        await UsersClient.fetch<IUser<WithSettings, WithProperties>[]>(url, {
           method: "GET",
           headers: { "Content-Type": "application/json; charset=utf-8" },
         });
@@ -169,24 +169,24 @@ export namespace UsersService {
     async getOne<WithSettings extends true | null, WithProperties extends true | null>(
       userIdentifier: string,
       includeSettings: WithSettings,
-      includeProperties: WithProperties
-    ): Promise<GetOneResponse<WithSettings, WithProperties>> {
-      const clientResponse: Common.ClientResponse<GetOneResponse<WithSettings, WithProperties>> =
-        await UsersClient.fetch<GetOneResponse<WithSettings, WithProperties>>(
+      includeProperties: WithProperties,
+    ): Promise<IUser<WithSettings, WithProperties>> {
+      const clientResponse: Common.ClientResponse<IUser<WithSettings, WithProperties>> =
+        await UsersClient.fetch<IUser<WithSettings, WithProperties>>(
           `${
             this.baseUrl
           }/api/users/one/${userIdentifier}/${!!includeSettings}/${!!includeProperties}`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json; charset=utf-8" },
-          }
+          },
         );
       return clientResponse.json();
     }
 
     async putSettings(
       userIdentifier: string,
-      userSettings: PutSettings
+      userSettings: PutSettings,
     ): Promise<PutSettingsResponse> {
       const clientResponse: Common.ClientResponse<PutSettingsResponse> =
         await UsersClient.fetch<PutSettingsResponse>(
@@ -195,7 +195,7 @@ export namespace UsersService {
             method: "GET",
             headers: { "Content-Type": "application/json; charset=utf-8" },
             body: JSON.stringify(userSettings),
-          }
+          },
         );
       return clientResponse.json();
     }
@@ -207,14 +207,14 @@ export namespace UsersService {
           {
             method: "GET",
             headers: { "Content-Type": "application/json; charset=utf-8" },
-          }
+          },
         );
       return clientResponse.json();
     }
 
     async deleteUserClaim(
       userIdentifier: string,
-      userClaimValue: string
+      userClaimValue: string,
     ): Promise<DeleteClaimResponse> {
       const clientResponse: Common.ClientResponse<DeleteClaimResponse> =
         await UsersClient.fetch<DeleteClaimResponse>(
@@ -222,14 +222,14 @@ export namespace UsersService {
           {
             method: "GET",
             headers: { "Content-Type": "application/json; charset=utf-8" },
-          }
+          },
         );
       return clientResponse.json();
     }
 
     async postUserClaim(
       userIdentifier: string,
-      userClaim: PostUserClaim
+      userClaim: PostUserClaim,
     ): Promise<PostUserClaimResponse> {
       const clientResponse: Common.ClientResponse<PostUserClaimResponse> =
         await UsersClient.fetch<PostUserClaimResponse>(
@@ -238,7 +238,7 @@ export namespace UsersService {
             method: "GET",
             headers: { "Content-Type": "application/json; charset=utf-8" },
             body: JSON.stringify(userClaim),
-          }
+          },
         );
       return clientResponse.json();
     }
@@ -513,7 +513,7 @@ export namespace AuthService {
      * @throws {Error} If required MSAL configuration values are missing for the selected environment.
      */
     static create<
-      T extends Environment.Production | Environment.Development = Environment.Production
+      T extends Environment.Production | Environment.Development = Environment.Production,
     >(msalConfig: MsalAuthConfig<T>): AuthIntranetClient {
       const client = new AuthIntranetClient();
 
@@ -522,7 +522,7 @@ export namespace AuthService {
       client.jwksHost =
         msalConfig !== null ? AuthIntranetClient.ORIGIN : "http://host.docker.internal:5081";
       client.jwks = createRemoteJWKSet(
-        new URL(`${client.jwksHost}/.well-known/jwks`) // ${client.endpoint}
+        new URL(`${client.jwksHost}/.well-known/jwks`), // ${client.endpoint}
       );
       client.msal = new MsalBrowser({
         authority: AuthIntranetClient.AUTHORITY,
@@ -636,7 +636,7 @@ export namespace AuthService {
     public async ldapLogin(
       username: string,
       password: string,
-      scopes: string[] = []
+      scopes: string[] = [],
     ): Promise<IConnectTokenResponse> {
       const params = new URLSearchParams({
         grant_type: "password",
@@ -680,7 +680,7 @@ export namespace AuthService {
     }
 
     /**
-     * Saves an error to the backend's `/api/error-log` endpoint for administrative diagnostics.
+     * Saves an error to the backend's `/api/auth-error` endpoint for administrative diagnostics.
      *
      * A unique reference ID is generated and returned to the caller.
      * This ID is safe to show to end users so that administrators can
@@ -692,7 +692,7 @@ export namespace AuthService {
     public async saveErrorAsync(error: unknown): Promise<string> {
       const reference = crypto.randomUUID();
 
-      await fetch(`${this.host}/api/error-log`, {
+      await fetch(`${this.host}/api/auth-error`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -729,7 +729,7 @@ export namespace AuthService {
      */
     public async refreshTokenAsync(
       refreshToken: string,
-      scopes: string[] = []
+      scopes: string[] = [],
     ): Promise<IConnectTokenResponse> {
       const params = new URLSearchParams({
         grant_type: "refresh_token",
@@ -767,17 +767,32 @@ export namespace AuthService {
         const { payload } = await jwtVerify(token, this.jwks, {
           issuer: `${this.host}/`,
         });
-        const { sub, username, email, office_location, confidentiality, permission, role } =
-          payload;
+        const {
+          sub,
+          username,
+          email,
+          office_location,
+          confidentiality,
+          region,
+          employeeId,
+          department,
+          jobTitle,
+          permission,
+          role,
+        } = payload;
 
         const passport = {
-          uuid: sub as string,
-          username: username as string,
-          email: email as string,
-          office_location: office_location as string,
-          confidentiality: confidentiality as string,
-          permission: permission as string[],
-          role: role as string[],
+          uuid: String(sub),
+          username: String(username),
+          email: String(email),
+          office_location: String(office_location),
+          confidentiality: String(confidentiality),
+          region: String(region),
+          employeeId: String(employeeId),
+          department: String(department),
+          jobTitle: String(jobTitle),
+          permission: Array.isArray(permission) ? permission.map((p) => String(p)) : [],
+          role: Array.isArray(role) ? role.map((r) => String(r)) : [],
         };
 
         return { payload, passport };
