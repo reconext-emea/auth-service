@@ -36,6 +36,10 @@ export namespace UsersService {
     email: string;
     office_location: string;
     confidentiality: string;
+    region: string;
+    employeeId: string;
+    department: string;
+    jobTitle: string;
     permission: string[];
     role: string[];
   }
