@@ -1,6 +1,6 @@
 namespace AuthService.Constants;
 
-public static class ColorTheme
+public static class PreferredColorTheme
 {
     public const string Light = "light";
     public const string Dark = "dark";

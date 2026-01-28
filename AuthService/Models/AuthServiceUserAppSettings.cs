@@ -11,7 +11,7 @@ public class AuthServiceUserAppSettings
     /// ISO 639-1 Language Code
     /// </summary>
     public string PreferredLanguageCode { get; set; } = PreferredLanguage.English;
-    public string ColorThemeCode { get; set; } = ColorTheme.Light;
+    public string PreferredColorThemeCode { get; set; } = PreferredColorTheme.Light;
 
     public AuthServiceUser User { get; set; } = null!;
 
@@ -20,6 +20,6 @@ public class AuthServiceUserAppSettings
     public AuthServiceUserAppSettings(UpdateUserSettingsDto dto)
     {
         PreferredLanguageCode = dto.PreferredLanguageCode;
-        ColorThemeCode = dto.ColorThemeCode;
+        PreferredColorThemeCode = dto.PreferredColorThemeCode;
     }
 }

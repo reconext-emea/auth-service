@@ -133,7 +133,7 @@ async function loginWithLdap(): Promise<void> {
     //
     const response: AuthService.IConnectTokenResponse = await client.ldapLogin(
       username.value,
-      password.value
+      password.value,
     );
 
     //
@@ -529,7 +529,7 @@ jwtAxios.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 jwtAxios.interceptors.response.use(
@@ -577,7 +577,7 @@ jwtAxios.interceptors.response.use(
       router.push({ path: `/` });
       return Promise.reject(ex);
     }
-  }
+  },
 );
 
 export default jwtAxios;

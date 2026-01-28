@@ -107,9 +107,9 @@ public class UsersController(
             query = query.Where(u => u.OfficeLocation == whereOfficeLocation);
 
         List<AuthServiceUser> users = await query.ToListAsync();
-        List<AuthServiceUserDto> passports = [.. users.Select(u => new AuthServiceUserDto(u))];
+        List<AuthServiceUserDto> passports = [.. users.Select(u => AuthServiceUserDto.From(u))];
 
-        return Ok(new GetUsersResponseDto { Users = passports });
+        return Ok(new GetUsersResponseDto(passports));
     }
 
     // --------------------------------------------------------------
@@ -137,9 +137,9 @@ public class UsersController(
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
-        AuthServiceUserDto passport = new(user);
+        AuthServiceUserDto passport = AuthServiceUserDto.From(user);
 
-        return Ok(new GetUserResponseDto { User = passport });
+        return Ok(new GetUserResponseDto(passport));
     }
 
     // --------------------------------------------------------------
@@ -162,13 +162,13 @@ public class UsersController(
             );
         }
 
-        if (!ColorTheme.IsValid(dto.ColorThemeCode))
+        if (!PreferredColorTheme.IsValid(dto.PreferredColorThemeCode))
         {
             return BadRequest(
                 new ErrorResponseDto
                 {
-                    Error = $"Invalid color theme '{dto.ColorThemeCode}'. ",
-                    Details = $"Allowed values: {string.Join(", ", ColorTheme.Options)}",
+                    Error = $"Invalid color theme '{dto.PreferredColorThemeCode}'. ",
+                    Details = $"Allowed values: {string.Join(", ", PreferredColorTheme.Options)}",
                 }
             );
         }
@@ -188,7 +188,7 @@ public class UsersController(
             {
                 Id = user.Id,
                 PreferredLanguageCode = dto.PreferredLanguageCode,
-                ColorThemeCode = dto.ColorThemeCode,
+                PreferredColorThemeCode = dto.PreferredColorThemeCode,
                 User = user,
             };
             _dbContext.AspNetUsersAppSettings.Add(settings);
@@ -196,7 +196,7 @@ public class UsersController(
         else
         {
             user.AppSettings.PreferredLanguageCode = dto.PreferredLanguageCode;
-            user.AppSettings.ColorThemeCode = dto.ColorThemeCode;
+            user.AppSettings.PreferredColorThemeCode = dto.PreferredColorThemeCode;
         }
 
         await _dbContext.SaveChangesAsync();

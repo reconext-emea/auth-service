@@ -1,7 +1,11 @@
 namespace AuthService.Models.Dto.Users;
 
-public class AuthServiceUserCustomPropertiesDto(AuthServiceUserCustomProperties customProperties)
+public sealed record AuthServiceUserCustomPropertiesDto(
+    string Confidentiality,
+    string Region,
+    IReadOnlyList<string> Programs
+)
 {
-    public string Confidentiality { get; set; } = customProperties.Confidentiality;
-    public string Region { get; set; } = customProperties.Region;
+    public static AuthServiceUserCustomPropertiesDto From(AuthServiceUserCustomProperties p) =>
+        new(p.Confidentiality, p.Region, [.. p.Programs ?? []]);
 }

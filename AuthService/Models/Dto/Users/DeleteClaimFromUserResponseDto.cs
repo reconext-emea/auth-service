@@ -1,6 +1,6 @@
 namespace AuthService.Models.Dto.Users;
 
-public class DeleteClaimFromUserResponseDto
+public sealed record DeleteClaimFromUserResponseDto
 {
-    public string Message { get; set; } = "User claim removed successfully.";
+    public string Message { get; } = "User claim removed successfully.";
 }

@@ -1,7 +1,10 @@
 namespace AuthService.Models.Dto.Users;
 
-public class AuthServiceUserSettingsDto(AuthServiceUserAppSettings appSettings)
+public sealed record AuthServiceUserSettingsDto(
+    string PreferredLanguageCode,
+    string PreferredColorThemeCode
+)
 {
-    public string PreferredLanguageCode { get; set; } = appSettings.PreferredLanguageCode;
-    public string ColorThemeCode { get; set; } = appSettings.ColorThemeCode;
+    public static AuthServiceUserSettingsDto From(AuthServiceUserAppSettings s) =>
+        new(s.PreferredLanguageCode, s.PreferredColorThemeCode);
 }

@@ -67,11 +67,11 @@ export namespace UsersService {
    *
    * **Supposed to be adjusted accordingly to changes.**
    */
-  export type ColorThemeCode = "light" | "dark";
+  export type PreferredColorThemeCode = "light" | "dark";
 
   export interface ISettings {
     preferredLanguageCode: PreferredLanguageCode;
-    colorThemeCode: ColorThemeCode;
+    PreferredColorThemeCode: PreferredColorThemeCode;
   }
 
   export interface IProperties {
@@ -83,21 +83,17 @@ export namespace UsersService {
   export type UserSettings<WithSettings> = WithSettings extends true ? ISettings : null;
   export type UserProperties<WithProperties> = WithProperties extends true ? IProperties : null;
 
-  /**
-   * Id (e.g., **123e4567-e89b-12d3-a456-426614174000**)
-   *
-   * Username (e.g., **marian.pazdzioch**)
-   *
-   * Email (e.g., **marian.pazdzioch@reconext.com**)
-   *
-   * Display Name (e.g., **Marian Pazdzioch**)
-   */
   export interface IUser<WithSettings, WithProperties> {
     id: string;
     userName: string;
     email: string;
     displayName: string;
     officeLocation: EmeaOfficeLocation;
+    confidentiality: string;
+    region: string;
+    employeeId: string;
+    department: string;
+    jobTitle: string;
     appSettings: UserSettings<WithSettings>;
     customProperties: UserProperties<WithProperties>;
   }
