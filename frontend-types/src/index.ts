@@ -71,7 +71,7 @@ export namespace UsersService {
 
   export interface ISettings {
     preferredLanguageCode: PreferredLanguageCode;
-    PreferredColorThemeCode: PreferredColorThemeCode;
+    preferredColorThemeCode: PreferredColorThemeCode;
   }
 
   export interface IProperties {

@@ -42,7 +42,7 @@ export declare namespace UsersService {
     type PreferredColorThemeCode = "light" | "dark";
     interface ISettings {
         preferredLanguageCode: PreferredLanguageCode;
-        PreferredColorThemeCode: PreferredColorThemeCode;
+        preferredColorThemeCode: PreferredColorThemeCode;
     }
     interface IProperties {
         confidentiality: string;
