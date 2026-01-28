@@ -1,7 +1,9 @@
+using AuthService.Constants;
+
 namespace AuthService.Models.Dto.Users;
 
-public class UpdateUserSettingsDto
+public sealed record UpdateUserSettingsDto
 {
-    public string PreferredLanguageCode { get; set; } = null!;
-    public string ColorThemeCode { get; set; } = null!;
+    public string PreferredLanguageCode { get; init; } = PreferredLanguage.English;
+    public string PreferredColorThemeCode { get; init; } = PreferredColorTheme.Light;
 }

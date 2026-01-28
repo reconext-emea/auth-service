@@ -1,6 +1,6 @@
 namespace AuthService.Models.Dto.Users;
 
-public class UpdateUserPropertiesResponseDto
+public sealed record UpdateUserPropertiesResponseDto
 {
-    public string Message { get; set; } = "Properties updated successfully.";
+    public string Message { get; } = "Properties updated successfully.";
 }

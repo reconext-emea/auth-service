@@ -1,6 +1,6 @@
 namespace AuthService.Models.Dto.Users;
 
-public class AddClaimToUserDtoResponseDto
+public sealed record AddClaimToUserDtoResponseDto
 {
-    public string Message { get; set; } = "User claim added successfully.";
+    public string Message { get; } = "User claim added successfully.";
 }

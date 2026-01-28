@@ -1,6 +1,9 @@
+using AuthService.Constants;
+
 namespace AuthService.Models.Dto.Users;
 
-public class UpdateUserPropertiesDto
+public sealed record UpdateUserPropertiesDto
 {
-    public string Confidentiality { get; set; } = null!;
+    public string Confidentiality { get; init; } = ConfidentialityClass.Class1;
+    public string[] Programs { get; init; } = [];
 }

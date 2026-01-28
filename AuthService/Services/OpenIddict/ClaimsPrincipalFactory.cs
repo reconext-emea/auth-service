@@ -57,7 +57,11 @@ public class ClaimsPrincipalFactory(
             new Claim(
                 "app_settings",
                 JsonSerializer.Serialize(
-                    new { user.AppSettings.PreferredLanguageCode, user.AppSettings.ColorThemeCode }
+                    new
+                    {
+                        user.AppSettings.PreferredLanguageCode,
+                        user.AppSettings.PreferredColorThemeCode,
+                    }
                 )
             ).SetDestinations(Destinations.IdentityToken)
         );

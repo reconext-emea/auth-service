@@ -1,38 +1,29 @@
 namespace AuthService.Models.Dto.Users;
 
-public class AuthServiceUserDto
+public sealed record AuthServiceUserDto(
+    string Id,
+    string UserName,
+    string Email,
+    string DisplayName,
+    string OfficeLocation,
+    string EmployeeId,
+    string Department,
+    string JobTitle,
+    AuthServiceUserSettingsDto AppSettings,
+    AuthServiceUserCustomPropertiesDto CustomProperties
+)
 {
-    public string Id { get; private set; }
-    public string UserName { get; private set; }
-    public string Email { get; private set; }
-    public string DisplayName { get; private set; }
-    public string OfficeLocation { get; private set; }
-
-    public string EmployeeId { get; private set; }
-    public string Department { get; private set; }
-    public string JobTitle { get; private set; }
-    public AuthServiceUserSettingsDto? AppSettings { get; private set; }
-    public AuthServiceUserCustomPropertiesDto? CustomProperties { get; private set; }
-
-    public AuthServiceUserDto(AuthServiceUser user)
-    {
-        Id = user.Id;
-        UserName = user.UserName!;
-        Email = user.Email!;
-        DisplayName = user.DisplayName;
-        OfficeLocation = user.OfficeLocation;
-        EmployeeId = user.EmployeeId;
-        Department = user.Department;
-        JobTitle = user.JobTitle;
-
-        if (user.AppSettings != null)
-        {
-            AppSettings = new AuthServiceUserSettingsDto(user.AppSettings);
-        }
-
-        if (user.CustomProperties != null)
-        {
-            CustomProperties = new AuthServiceUserCustomPropertiesDto(user.CustomProperties);
-        }
-    }
+    public static AuthServiceUserDto From(AuthServiceUser user) =>
+        new(
+            user.Id,
+            user.UserName!,
+            user.Email!,
+            user.DisplayName,
+            user.OfficeLocation,
+            user.EmployeeId,
+            user.Department,
+            user.JobTitle,
+            AuthServiceUserSettingsDto.From(user.AppSettings),
+            AuthServiceUserCustomPropertiesDto.From(user.CustomProperties)
+        );
 }

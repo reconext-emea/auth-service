@@ -1,6 +1,3 @@
 namespace AuthService.Models.Dto.Users;
 
-public class GetUserResponseDto
-{
-    public AuthServiceUserDto User { get; set; } = null!;
-}
+public sealed record GetUserResponseDto(AuthServiceUserDto User);

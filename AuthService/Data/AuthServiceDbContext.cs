@@ -35,8 +35,8 @@ public class AuthServiceDbContext(DbContextOptions<AuthServiceDbContext> options
 
         builder
             .Entity<AuthServiceUserAppSettings>()
-            .Property(s => s.ColorThemeCode)
-            .HasDefaultValue(ColorTheme.Light);
+            .Property(s => s.PreferredColorThemeCode)
+            .HasDefaultValue(PreferredColorTheme.Light);
 
         builder.Entity<AuthServiceUserCustomProperties>().ToTable("AspNetUsersCustomProperties");
 
@@ -56,6 +56,11 @@ public class AuthServiceDbContext(DbContextOptions<AuthServiceDbContext> options
             .Entity<AuthServiceUserCustomProperties>()
             .Property(s => s.Region)
             .HasDefaultValue(string.Empty);
+
+        builder
+            .Entity<AuthServiceUserCustomProperties>()
+            .Property(s => s.Programs)
+            .HasDefaultValue(new List<string>());
 
         builder.Entity<AuthServiceUser>(b =>
         {
