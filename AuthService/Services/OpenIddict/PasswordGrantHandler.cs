@@ -1,4 +1,5 @@
 using AuthService.Clients.LdapClient;
+using AuthService.Constants;
 using AuthService.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,22 +12,23 @@ namespace AuthService.Services.OpenIddict;
 public class PasswordGrantHandler(
     ILdapClient ldap,
     UserManager<AuthServiceUser> userManager,
-    IClaimsPrincipalFactory claimsFactory
+    IClaimsPrincipalFactory claimsFactory,
+    OfficeLocationToRegionAdapter adapter
 ) : IOpenIddictServerHandler<OpenIddictServerEvents.HandleTokenRequestContext>
 {
     private readonly ILdapClient _ldap = ldap;
     private readonly UserManager<AuthServiceUser> _userManager = userManager;
     private readonly IClaimsPrincipalFactory _claimsFactory = claimsFactory;
 
+    private readonly OfficeLocationToRegionAdapter _adapter = adapter;
+
     public async ValueTask HandleAsync(OpenIddictServerEvents.HandleTokenRequestContext context)
     {
         if (!context.Request.IsPasswordGrantType())
             return;
 
-        // Extract values
         string? username = context.Request.Username;
         string? password = context.Request.Password;
-        // string? domain = context.Request.GetParameter("domain")?.ToString();
 
         // ---- Input validation ----
         if (string.IsNullOrWhiteSpace(username))
@@ -40,12 +42,6 @@ public class PasswordGrantHandler(
             context.Reject(Errors.InvalidRequest, "Password is required.");
             return;
         }
-
-        // if (string.IsNullOrWhiteSpace(domain))
-        // {
-        //     context.Reject(Errors.InvalidRequest, "Domain is required.");
-        //     return;
-        // }
 
         var passport = new UserPassport(username, "reconext.com", password);
         LdapAuthenticateAsyncResult authResult = await _ldap.AuthenticateAsync(passport);
@@ -67,7 +63,7 @@ public class PasswordGrantHandler(
 
         if (user == null)
         {
-            user = AuthServiceUser.CreateFromLdap(ldapUser);
+            user = AuthServiceUser.CreateFromLdap(ldapUser, _adapter);
             IdentityResult result = await _userManager.CreateAsync(user);
 
             if (!result.Succeeded)
@@ -78,7 +74,7 @@ public class PasswordGrantHandler(
         }
         else
         {
-            user.UpdateFromLdap(ldapUser);
+            user.UpdateFromLdap(ldapUser, _adapter);
             await _userManager.UpdateAsync(user);
         }
 

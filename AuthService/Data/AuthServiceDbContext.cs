@@ -2,6 +2,7 @@ using AuthService.Constants;
 using AuthService.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace AuthService.Data;
 
@@ -78,6 +79,25 @@ public class AuthServiceDbContext(DbContextOptions<AuthServiceDbContext> options
                 .HasMaxLength(256)
                 .HasDefaultValue(string.Empty)
                 .IsRequired();
+        });
+
+        builder.Entity<AuthServiceUserApplication>(b =>
+        {
+            b.ToTable("AspNetUsersOpenIddictApplications");
+
+            b.HasKey(x => new { x.UserId, x.ApplicationId });
+
+            b.HasOne(x => x.User)
+                .WithMany(u => u.Applications)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(x => x.ApplicationId);
+
+            b.HasOne(x => x.Application)
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<AuthError>().ToTable("AuthErrors");

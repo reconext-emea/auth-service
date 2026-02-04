@@ -1,6 +1,3 @@
 namespace AuthService.Models.Dto.Roles;
 
-public class GetAccessLevelsResponseDto
-{
-    public List<string> AccessLevels { get; set; } = null!;
-}
+public sealed record GetAccessLevelsResponseDto(List<string> AccessLevels);

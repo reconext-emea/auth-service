@@ -1,11 +1,11 @@
 {
-  "name": "@reconext/auth-service-frontend-types",
+  "name": "@reconext/auth-service-ts-types",
   "version": "1.2.0",
   "type": "module",
-  "main": "./frontend-types/dist/index.js",
-  "types": "./frontend-types/dist/index.d.ts",
+  "main": "./ts-types/dist/index.js",
+  "types": "./ts-types/dist/index.d.ts",
   "files": [
-    "frontend-types/dist/"
+    "ts-types/dist/"
   ],
   "dependencies": {
     "@azure/msal-browser": "^4.27.0",
@@ -15,6 +15,6 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "build:frontend": "tsc"
+    "build:types": "tsc"
   }
 }

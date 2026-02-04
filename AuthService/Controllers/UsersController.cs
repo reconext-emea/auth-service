@@ -4,35 +4,83 @@ using AuthService.Data;
 using AuthService.Models;
 using AuthService.Models.Dto.Errors;
 using AuthService.Models.Dto.Users;
-using AuthService.Services.UserImport;
+using AuthService.Services.Identity;
+using AuthService.Services.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Abstractions;
 
 namespace AuthService.Controllers;
 
 [ApiController]
 [ApiExplorerSettings(GroupName = "users")]
 [Route("api/users")]
+[Authorize]
 public class UsersController(
     UserManager<AuthServiceUser> userManager,
     RoleManager<IdentityRole> roleManager,
+    IOpenIddictApplicationManager appManager,
     AuthServiceDbContext dbContext,
-    IUserImportService userImportService
+    IUserService userService,
+    OfficeLocationToRegionAdapter adapter
 ) : ControllerBase
 {
     private readonly UserManager<AuthServiceUser> _userManager = userManager;
 
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
 
+    private readonly IOpenIddictApplicationManager _appManager = appManager;
+
     private readonly AuthServiceDbContext _dbContext = dbContext;
 
-    private readonly IUserImportService _userImportService = userImportService;
+    private readonly IUserService _userService = userService;
+    private readonly OfficeLocationToRegionAdapter _adapter = adapter;
+
+    // --------------------------------------------------------------
+    // Get distinct departments of users
+    // --------------------------------------------------------------
+    [HttpGet("departments")]
+    public async Task<ActionResult<GetDepartmentsResponseDto>> GetDepartments(
+        [FromQuery] string? whereOfficeLocation
+    )
+    {
+        IQueryable<AuthServiceUser> query = _userManager.Users;
+
+        if (!string.IsNullOrWhiteSpace(whereOfficeLocation))
+            query = query.Where(u => u.OfficeLocation == whereOfficeLocation);
+
+        IQueryable<string> departmentsQuery = query
+            .Where(u => !string.IsNullOrWhiteSpace(u.Department))
+            .Select(u => u.Department)
+            .Distinct();
+
+        List<string> departments = await departmentsQuery.ToListAsync();
+
+        return Ok(new GetDepartmentsResponseDto(departments));
+    }
+
+    // --------------------------------------------------------------
+    // Import User
+    // --------------------------------------------------------------
+    // [HttpPost("one/import")]
+    // public async Task<ActionResult<ImportUsersResponseDto>> ImportUser(
+    //     [FromBody] ImportUserRequestDto dto,
+    //     CancellationToken cancellationToken
+    // )
+    // {
+    //     var futureResponse = new ImportUsersResponseDto();
+
+    //     await _userService.ImportSingleUserAsync(dto.User, futureResponse, cancellationToken);
+
+    //     return Ok(futureResponse);
+    // }
 
     // --------------------------------------------------------------
     // Import Users
     // --------------------------------------------------------------
-    [HttpPost("import")]
+    [HttpPost("many/import")]
     public async Task<ActionResult<ImportUsersResponseDto>> ImportUsers(
         [FromBody] ImportUsersRequestDto dto,
         CancellationToken cancellationToken
@@ -42,11 +90,7 @@ public class UsersController(
 
         foreach (ImportUserDto import in dto.Users)
         {
-            await _userImportService.ImportSingleUserAsync(
-                import,
-                futureResponse,
-                cancellationToken
-            );
+            await _userService.ImportSingleUserAsync(import, futureResponse, cancellationToken);
         }
 
         return Ok(futureResponse);
@@ -58,12 +102,14 @@ public class UsersController(
     [HttpDelete("one/{userIdentifier}")]
     public async Task<ActionResult<DeleteUserResponseDto>> DeleteUser(string userIdentifier)
     {
-        AuthServiceUser? user = await _userManager
-            .Users.Include(u => u.AppSettings)
-            .Include(u => u.CustomProperties)
-            .FirstOrDefaultAsync(u =>
-                u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
-            );
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(userIdentifier);
+
+        // await _userManager
+        //     .Users.Include(u => u.AppSettings)
+        //     .Include(u => u.CustomProperties)
+        //     .FirstOrDefaultAsync(u =>
+        //         u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        //     );
 
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
@@ -88,26 +134,42 @@ public class UsersController(
     // --------------------------------------------------------------
     // Get All Users
     // --------------------------------------------------------------
-    [HttpGet("many/{includeSettings:bool}/{includeProperties:bool}")]
+    [HttpGet("many")]
     public async Task<ActionResult<GetUsersResponseDto>> GetUsers(
-        bool includeSettings,
-        bool includeProperties,
-        [FromQuery] string? whereOfficeLocation
+        [FromQuery] string? whereOfficeLocation,
+        [FromQuery] string? whereDepartment,
+        [FromQuery] string? whereJobTitle,
+        [FromQuery] string? whereConfidentiality,
+        [FromQuery] string? whereClientId
     )
     {
         IQueryable<AuthServiceUser> query = _userManager.Users;
 
-        if (includeSettings)
-            query = query.Include(u => u.AppSettings);
-
-        if (includeProperties)
-            query = query.Include(u => u.CustomProperties);
+        query = query
+            .Include(u => u.AppSettings)
+            .Include(u => u.CustomProperties)
+            .Include(u => u.Applications)
+                .ThenInclude(ua => ua.Application);
 
         if (!string.IsNullOrWhiteSpace(whereOfficeLocation))
             query = query.Where(u => u.OfficeLocation == whereOfficeLocation);
 
+        if (!string.IsNullOrWhiteSpace(whereDepartment))
+            query = query.Where(u => u.Department == whereDepartment);
+
+        if (!string.IsNullOrWhiteSpace(whereJobTitle))
+            query = query.Where(u => u.JobTitle == whereJobTitle);
+
+        if (!string.IsNullOrWhiteSpace(whereConfidentiality))
+            query = query.Where(u => u.CustomProperties.Confidentiality == whereConfidentiality);
+
+        if (!string.IsNullOrWhiteSpace(whereClientId))
+            query = query.Where(u =>
+                u.Applications.Any(a => a.Application.ClientId == whereClientId)
+            );
+
         List<AuthServiceUser> users = await query.ToListAsync();
-        List<AuthServiceUserDto> passports = [.. users.Select(u => AuthServiceUserDto.From(u))];
+        List<AuthServiceUserDto> passports = [.. users.Select(AuthServiceUserDto.From)];
 
         return Ok(new GetUsersResponseDto(passports));
     }
@@ -115,24 +177,22 @@ public class UsersController(
     // --------------------------------------------------------------
     // Get Specific User by Id / Username / Email
     // --------------------------------------------------------------
-    [HttpGet("one/{userIdentifier}/{includeSettings:bool}/{includeProperties:bool}")]
-    public async Task<ActionResult<AuthServiceUserDto>> GetUser(
-        string userIdentifier,
-        bool includeSettings,
-        bool includeProperties
-    )
+    [HttpGet("one/{userIdentifier}")]
+    public async Task<ActionResult<AuthServiceUserDto>> GetUser(string userIdentifier)
     {
         IQueryable<AuthServiceUser> query = _userManager.Users;
 
-        if (includeSettings)
-            query = query.Include(u => u.AppSettings);
+        query = query
+            .Include(u => u.AppSettings)
+            .Include(u => u.CustomProperties)
+            .Include(u => u.Applications)
+                .ThenInclude(ua => ua.Application);
 
-        if (includeProperties)
-            query = query.Include(u => u.CustomProperties);
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(query, userIdentifier);
 
-        AuthServiceUser? user = await query.FirstOrDefaultAsync(u =>
-            u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
-        );
+        // await query.FirstOrDefaultAsync(u =>
+        //     u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        // );
 
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
@@ -140,6 +200,46 @@ public class UsersController(
         AuthServiceUserDto passport = AuthServiceUserDto.From(user);
 
         return Ok(new GetUserResponseDto(passport));
+    }
+
+    // --------------------------------------------------------------
+    // Update User EmployeeId
+    // --------------------------------------------------------------
+    [HttpPut("one/{userIdentifier}/employee-id")]
+    public async Task<ActionResult<UpdateEmployeeIdResponseDto>> UpdateEmployeeId(
+        string userIdentifier,
+        [FromBody] UpdateEmployeeIdDto dto
+    )
+    {
+        if (string.IsNullOrWhiteSpace(dto.EmployeeId))
+        {
+            return BadRequest(new ErrorResponseDto { Error = "EmployeeId cannot be empty." });
+        }
+
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(userIdentifier);
+
+        if (user == null)
+            return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
+
+        user.SetEmployeeId(dto.EmployeeId);
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(
+                new ErrorResponseDto
+                {
+                    Error = "Failed to update EmployeeId.",
+                    Details = string.Join(
+                        "; ",
+                        result.Errors.Select(e => $"{e.Code}: {e.Description}")
+                    ),
+                }
+            );
+        }
+
+        return Ok(new UpdateEmployeeIdResponseDto());
     }
 
     // --------------------------------------------------------------
@@ -173,11 +273,17 @@ public class UsersController(
             );
         }
 
-        AuthServiceUser? user = await _userManager
-            .Users.Include(u => u.AppSettings)
-            .FirstOrDefaultAsync(u =>
-                u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
-            );
+        IQueryable<AuthServiceUser> query = _userManager.Users;
+
+        query = query.Include(u => u.AppSettings);
+
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(query, userIdentifier);
+
+        // AuthServiceUser? user = await _userManager
+        //     .Users.Include(u => u.AppSettings)
+        //     .FirstOrDefaultAsync(u =>
+        //         u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        //     );
 
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
@@ -224,30 +330,30 @@ public class UsersController(
             );
         }
 
-        AuthServiceUser? user = await _userManager
-            .Users.Include(u => u.CustomProperties)
-            .FirstOrDefaultAsync(u =>
-                u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
-            );
+        IQueryable<AuthServiceUser> query = _userManager.Users;
+
+        query = query.Include(u => u.CustomProperties);
+
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(query, userIdentifier);
+
+        // AuthServiceUser? user = await _userManager
+        //     .Users.Include(u => u.CustomProperties)
+        //     .FirstOrDefaultAsync(u =>
+        //         u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        //     );
 
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
         if (user.CustomProperties == null)
         {
-            var properties = new AuthServiceUserCustomProperties(user, dto);
-            // {
-            //     Id = user.Id,
-            //     Confidentiality = dto.Confidentiality,
-            //     User = user,
-            // };
+            var properties = new AuthServiceUserCustomProperties(user, _adapter, dto);
 
             _dbContext.AspNetUsersCustomProperties.Add(properties);
         }
         else
         {
-            user.CustomProperties.UpdateProperties(user, dto);
-            // user.CustomProperties.Confidentiality = dto.Confidentiality;
+            user.CustomProperties.UpdateProperties(user, _adapter, dto);
         }
 
         await _dbContext.SaveChangesAsync();
@@ -261,9 +367,11 @@ public class UsersController(
     [HttpGet("one/{userIdentifier}/claims")]
     public async Task<ActionResult<GetUserClaimsResponseDto>> GetUserClaims(string userIdentifier)
     {
-        AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
-            u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
-        );
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(userIdentifier);
+
+        // AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
+        //     u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        // );
 
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
@@ -302,9 +410,11 @@ public class UsersController(
         string userClaimValue
     )
     {
-        AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
-            u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
-        );
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(userIdentifier);
+
+        // await _userManager.Users.FirstOrDefaultAsync(u =>
+        //     u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        // );
 
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
@@ -347,50 +457,45 @@ public class UsersController(
         [FromBody] AddClaimToUserDto dto
     )
     {
-        AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
-            u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
-        );
+        if (await _appManager.FindByClientIdAsync(dto.Tool) is null)
+            return NotFound(
+                new ErrorResponseDto
+                {
+                    Error =
+                        $"Application (clientId='{dto.Tool}') not found. "
+                        + "User permission claims are specialized role claims, so the Tool part of a claim must match the clientId of a registered application. "
+                        + "Applications are registered when a role is created, where the Tool value is converted to kebab-case and used as the clientId.",
+                }
+            );
+
+        if (!PermissionClaimService.TryCreateUserClaim(dto, out var claim, out var error))
+        {
+            return BadRequest(error);
+        }
+
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(userIdentifier);
+
+        // AuthServiceUser? user = await _userManager.Users.FirstOrDefaultAsync(u =>
+        //     u.Id == userIdentifier || u.UserName == userIdentifier || u.Email == userIdentifier
+        // );
 
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
-        if (dto.Tool.Contains('.'))
-        {
-            return BadRequest(
-                new ErrorResponseDto
-                {
-                    Error = "Tool cannot contain '.' character.",
-                    Details = dto.Privilege,
-                }
-            );
-        }
-
-        if (dto.Privilege.Contains('.'))
-        {
-            return BadRequest(
-                new ErrorResponseDto
-                {
-                    Error = "Privilege cannot contain '.' character.",
-                    Details = dto.Privilege,
-                }
-            );
-        }
-
-        var userClaimValue = $"user.{dto.Tool.ToLower()}.{dto.Privilege.ToLower()}";
-
         var existingClaims = await _userManager.GetClaimsAsync(user);
-        if (existingClaims.Any(c => c.Type == "permission" && c.Value == userClaimValue))
+
+        bool hasClaim = existingClaims.Any(c => c.Type == claim.Type && c.Value == claim.Value);
+
+        if (hasClaim)
         {
             return BadRequest(
                 new ErrorResponseDto
                 {
                     Error = "User already has this claim.",
-                    Details = userClaimValue,
+                    Details = claim.Value,
                 }
             );
         }
-
-        var claim = new Claim("permission", userClaimValue);
 
         var result = await _userManager.AddClaimAsync(user, claim);
 

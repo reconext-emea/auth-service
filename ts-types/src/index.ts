@@ -48,205 +48,205 @@ export namespace UsersService {
    *
    * **Supposed to be adjusted accordingly to changes.**
    */
-  export type EmeaOfficeLocation =
-    | "Bydgoszcz Site (PL)"
-    | "Havant Site (UK)"
-    | "Prague Site (CZ)"
-    | "REMOTE / HOME OFFICE"
-    | "Tallinn Site (EE)"
-    | "Zoetermeer Site (NL)";
+  // export type EmeaOfficeLocation =
+  //   | "Bydgoszcz Site (PL)"
+  //   | "Havant Site (UK)"
+  //   | "Prague Site (CZ)"
+  //   | "REMOTE / HOME OFFICE"
+  //   | "Tallinn Site (EE)"
+  //   | "Zoetermeer Site (NL)";
 
   /**
    * List of allowed preferred language codes, based on: AuthService.Constants.PreferredLanguage.
    *
    * **Supposed to be adjusted accordingly to changes.**
    */
-  export type PreferredLanguageCode = "en" | "pl" | "ua" | "cs";
+  // export type PreferredLanguageCode = "en" | "pl" | "ua" | "cs";
   /**
    * List of allowed preferred language codes, based on: AuthService.Constants.ColorTheme.
    *
    * **Supposed to be adjusted accordingly to changes.**
    */
-  export type PreferredColorThemeCode = "light" | "dark";
+  // export type PreferredColorThemeCode = "light" | "dark";
 
-  export interface ISettings {
-    preferredLanguageCode: PreferredLanguageCode;
-    preferredColorThemeCode: PreferredColorThemeCode;
-  }
+  // export interface ISettings {
+  //   preferredLanguageCode: PreferredLanguageCode;
+  //   preferredColorThemeCode: PreferredColorThemeCode;
+  // }
 
-  export interface IProperties {
-    confidentiality: string;
-  }
+  // export interface IProperties {
+  //   confidentiality: string;
+  // }
 
-  export type PutSettings = ISettings;
+  // export type PutSettings = ISettings;
 
-  export type UserSettings<WithSettings> = WithSettings extends true ? ISettings : null;
-  export type UserProperties<WithProperties> = WithProperties extends true ? IProperties : null;
+  // export type UserSettings<WithSettings> = WithSettings extends true ? ISettings : null;
+  // export type UserProperties<WithProperties> = WithProperties extends true ? IProperties : null;
 
-  export interface IUser<WithSettings, WithProperties> {
-    id: string;
-    userName: string;
-    email: string;
-    displayName: string;
-    officeLocation: EmeaOfficeLocation;
-    confidentiality: string;
-    region: string;
-    employeeId: string;
-    department: string;
-    jobTitle: string;
-    appSettings: UserSettings<WithSettings>;
-    customProperties: UserProperties<WithProperties>;
-  }
+  // export interface IUser<WithSettings, WithProperties> {
+  //   id: string;
+  //   userName: string;
+  //   email: string;
+  //   displayName: string;
+  //   officeLocation: EmeaOfficeLocation;
+  //   confidentiality: string;
+  //   region: string;
+  //   employeeId: string;
+  //   department: string;
+  //   jobTitle: string;
+  //   appSettings: UserSettings<WithSettings>;
+  //   customProperties: UserProperties<WithProperties>;
+  // }
 
-  export type UserClaims = string[];
-  export type RoleClaims = string[];
-  export interface IClaims {
-    userClaims: UserClaims;
-    roleClaims: RoleClaims;
-  }
+  // export type UserClaims = string[];
+  // export type RoleClaims = string[];
+  // export interface IClaims {
+  //   userClaims: UserClaims;
+  //   roleClaims: RoleClaims;
+  // }
 
-  export type GetManyResponse<WithSettings, WithProperties> = {
-    users: IUser<WithSettings, WithProperties>[];
-  };
+  // export type GetManyResponse<WithSettings, WithProperties> = {
+  //   users: IUser<WithSettings, WithProperties>[];
+  // };
 
-  export type GetOneResponse<WithSettings, WithProperties> = {
-    user: IUser<WithSettings, WithProperties>;
-  };
+  // export type GetOneResponse<WithSettings, WithProperties> = {
+  //   user: IUser<WithSettings, WithProperties>;
+  // };
 
-  export interface IMessage {
-    message: string;
-  }
+  // export interface IMessage {
+  //   message: string;
+  // }
 
-  export type PutSettingsResponse = IMessage;
+  // export type PutSettingsResponse = IMessage;
 
-  export type GetClaimsResponse = IClaims;
+  // export type GetClaimsResponse = IClaims;
 
-  export type DeleteClaimResponse = IMessage;
+  // export type DeleteClaimResponse = IMessage;
 
-  export type PostUserClaim = {
-    tool: string;
-    privilege: string;
-  };
+  // export type PostUserClaim = {
+  //   tool: string;
+  //   privilege: string;
+  // };
 
-  export type PostUserClaimResponse = IMessage;
+  // export type PostUserClaimResponse = IMessage;
 
-  export class UsersClient extends Common.Client {
-    private static readonly ORIGIN = "https://10.41.0.85:5081";
-    private static readonly DEVELOPMENT_ORIGIN = "http://localhost:5081";
+  // export class UsersClient extends Common.Client {
+  //   private static readonly ORIGIN = "https://10.41.0.85:5081";
+  //   private static readonly DEVELOPMENT_ORIGIN = "http://localhost:5081";
 
-    private baseUrl: string;
-    private getBaseUrl(development: boolean) {
-      return `${development ? UsersClient.DEVELOPMENT_ORIGIN : UsersClient.ORIGIN}`;
-    }
+  //   private baseUrl: string;
+  //   private getBaseUrl(development: boolean) {
+  //     return `${development ? UsersClient.DEVELOPMENT_ORIGIN : UsersClient.ORIGIN}`;
+  //   }
 
-    constructor(environment: "Development" | "Production" | boolean = "Development") {
-      super();
-      this.baseUrl = this.getBaseUrl(
-        typeof environment === "boolean" ? environment : environment === "Development",
-      );
-    }
+  //   constructor(environment: "Development" | "Production" | boolean = "Development") {
+  //     super();
+  //     this.baseUrl = this.getBaseUrl(
+  //       typeof environment === "boolean" ? environment : environment === "Development",
+  //     );
+  //   }
 
-    async getMany<WithSettings extends true | null, WithProperties extends true | null>(
-      includeSettings: WithSettings,
-      includeProperties: WithProperties,
-      whereOfficeLocation?: string,
-    ): Promise<GetManyResponse<WithSettings, WithProperties>> {
-      const params = new URLSearchParams();
+  //   async getMany<WithSettings extends true | null, WithProperties extends true | null>(
+  //     includeSettings: WithSettings,
+  //     includeProperties: WithProperties,
+  //     whereOfficeLocation?: string,
+  //   ): Promise<GetManyResponse<WithSettings, WithProperties>> {
+  //     const params = new URLSearchParams();
 
-      if (whereOfficeLocation) {
-        params.append("whereOfficeLocation", whereOfficeLocation);
-      }
+  //     if (whereOfficeLocation) {
+  //       params.append("whereOfficeLocation", whereOfficeLocation);
+  //     }
 
-      const queryString = params.toString();
-      const url =
-        `${this.baseUrl}/api/users/many/${!!includeSettings}/${!!includeProperties}` +
-        (queryString ? `?${queryString}` : "");
+  //     const queryString = params.toString();
+  //     const url =
+  //       `${this.baseUrl}/api/users/many/${!!includeSettings}/${!!includeProperties}` +
+  //       (queryString ? `?${queryString}` : "");
 
-      const clientResponse: Common.ClientResponse<GetManyResponse<WithSettings, WithProperties>> =
-        await UsersClient.fetch<GetManyResponse<WithSettings, WithProperties>>(url, {
-          method: "GET",
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        });
-      return clientResponse.json();
-    }
+  //     const clientResponse: Common.ClientResponse<GetManyResponse<WithSettings, WithProperties>> =
+  //       await UsersClient.fetch<GetManyResponse<WithSettings, WithProperties>>(url, {
+  //         method: "GET",
+  //         headers: { "Content-Type": "application/json; charset=utf-8" },
+  //       });
+  //     return clientResponse.json();
+  //   }
 
-    async getOne<WithSettings extends true | null, WithProperties extends true | null>(
-      userIdentifier: string,
-      includeSettings: WithSettings,
-      includeProperties: WithProperties,
-    ): Promise<GetOneResponse<WithSettings, WithProperties>> {
-      const clientResponse: Common.ClientResponse<GetOneResponse<WithSettings, WithProperties>> =
-        await UsersClient.fetch<GetOneResponse<WithSettings, WithProperties>>(
-          `${
-            this.baseUrl
-          }/api/users/one/${userIdentifier}/${!!includeSettings}/${!!includeProperties}`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-          },
-        );
-      return clientResponse.json();
-    }
+  //   async getOne<WithSettings extends true | null, WithProperties extends true | null>(
+  //     userIdentifier: string,
+  //     includeSettings: WithSettings,
+  //     includeProperties: WithProperties,
+  //   ): Promise<GetOneResponse<WithSettings, WithProperties>> {
+  //     const clientResponse: Common.ClientResponse<GetOneResponse<WithSettings, WithProperties>> =
+  //       await UsersClient.fetch<GetOneResponse<WithSettings, WithProperties>>(
+  //         `${
+  //           this.baseUrl
+  //         }/api/users/one/${userIdentifier}/${!!includeSettings}/${!!includeProperties}`,
+  //         {
+  //           method: "GET",
+  //           headers: { "Content-Type": "application/json; charset=utf-8" },
+  //         },
+  //       );
+  //     return clientResponse.json();
+  //   }
 
-    async putSettings(
-      userIdentifier: string,
-      userSettings: PutSettings,
-    ): Promise<PutSettingsResponse> {
-      const clientResponse: Common.ClientResponse<PutSettingsResponse> =
-        await UsersClient.fetch<PutSettingsResponse>(
-          `${this.baseUrl}/api/users/one/${userIdentifier}/settings`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-            body: JSON.stringify(userSettings),
-          },
-        );
-      return clientResponse.json();
-    }
+  //   async putSettings(
+  //     userIdentifier: string,
+  //     userSettings: PutSettings,
+  //   ): Promise<PutSettingsResponse> {
+  //     const clientResponse: Common.ClientResponse<PutSettingsResponse> =
+  //       await UsersClient.fetch<PutSettingsResponse>(
+  //         `${this.baseUrl}/api/users/one/${userIdentifier}/settings`,
+  //         {
+  //           method: "GET",
+  //           headers: { "Content-Type": "application/json; charset=utf-8" },
+  //           body: JSON.stringify(userSettings),
+  //         },
+  //       );
+  //     return clientResponse.json();
+  //   }
 
-    async getClaims(userIdentifier: string): Promise<GetClaimsResponse> {
-      const clientResponse: Common.ClientResponse<GetClaimsResponse> =
-        await UsersClient.fetch<GetClaimsResponse>(
-          `${this.baseUrl}/api/users/one/${userIdentifier}/claims`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-          },
-        );
-      return clientResponse.json();
-    }
+  //   async getClaims(userIdentifier: string): Promise<GetClaimsResponse> {
+  //     const clientResponse: Common.ClientResponse<GetClaimsResponse> =
+  //       await UsersClient.fetch<GetClaimsResponse>(
+  //         `${this.baseUrl}/api/users/one/${userIdentifier}/claims`,
+  //         {
+  //           method: "GET",
+  //           headers: { "Content-Type": "application/json; charset=utf-8" },
+  //         },
+  //       );
+  //     return clientResponse.json();
+  //   }
 
-    async deleteUserClaim(
-      userIdentifier: string,
-      userClaimValue: string,
-    ): Promise<DeleteClaimResponse> {
-      const clientResponse: Common.ClientResponse<DeleteClaimResponse> =
-        await UsersClient.fetch<DeleteClaimResponse>(
-          `${this.baseUrl}/api/users/one/${userIdentifier}/claims/${userClaimValue}`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-          },
-        );
-      return clientResponse.json();
-    }
+  //   async deleteUserClaim(
+  //     userIdentifier: string,
+  //     userClaimValue: string,
+  //   ): Promise<DeleteClaimResponse> {
+  //     const clientResponse: Common.ClientResponse<DeleteClaimResponse> =
+  //       await UsersClient.fetch<DeleteClaimResponse>(
+  //         `${this.baseUrl}/api/users/one/${userIdentifier}/claims/${userClaimValue}`,
+  //         {
+  //           method: "GET",
+  //           headers: { "Content-Type": "application/json; charset=utf-8" },
+  //         },
+  //       );
+  //     return clientResponse.json();
+  //   }
 
-    async postUserClaim(
-      userIdentifier: string,
-      userClaim: PostUserClaim,
-    ): Promise<PostUserClaimResponse> {
-      const clientResponse: Common.ClientResponse<PostUserClaimResponse> =
-        await UsersClient.fetch<PostUserClaimResponse>(
-          `${this.baseUrl}/api/users/one/${userIdentifier}/settings`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-            body: JSON.stringify(userClaim),
-          },
-        );
-      return clientResponse.json();
-    }
-  }
+  //   async postUserClaim(
+  //     userIdentifier: string,
+  //     userClaim: PostUserClaim,
+  //   ): Promise<PostUserClaimResponse> {
+  //     const clientResponse: Common.ClientResponse<PostUserClaimResponse> =
+  //       await UsersClient.fetch<PostUserClaimResponse>(
+  //         `${this.baseUrl}/api/users/one/${userIdentifier}/settings`,
+  //         {
+  //           method: "GET",
+  //           headers: { "Content-Type": "application/json; charset=utf-8" },
+  //           body: JSON.stringify(userClaim),
+  //         },
+  //       );
+  //     return clientResponse.json();
+  //   }
+  // }
 }
 
 export namespace AuthService {
@@ -803,6 +803,236 @@ export namespace AuthService {
       } catch (error) {
         console.error("Validation of JwtSignature error: ", error);
         return false;
+      }
+    }
+  }
+
+  export namespace Dto {
+    export namespace Errors {
+      export interface ErrorResponseDto {}
+    }
+
+    export namespace Roles {
+      // -------------------------
+      // Access Levels
+      // -------------------------
+      export interface GetAccessLevelsResponseDto {
+        accessLevels: string[];
+      }
+
+      // -------------------------
+      // Permission Types
+      // -------------------------
+      export interface GetPermissionTypesResponseDto {
+        permissions: string[];
+      }
+
+      // -------------------------
+      // Get Roles
+      // -------------------------
+      export interface GetRolesResponseDto {
+        roles: string[];
+      }
+
+      export interface GetRolesOfUserResponseDto {
+        roles: string[];
+      }
+
+      // -------------------------
+      // Create Role
+      // -------------------------
+      export interface CreateRoleDto {
+        tool: string;
+        access: string;
+      }
+
+      export interface CreateRoleResponseDto {
+        message: string;
+      }
+
+      // -------------------------
+      // Delete Role
+      // -------------------------
+      export interface DeleteRoleResponseDto {
+        message: string;
+      }
+
+      // -------------------------
+      // Assign Role
+      // -------------------------
+      export interface AssignRoleDto {
+        userIdentifier: string;
+        roleName: string;
+      }
+
+      export interface AssignRoleResponseDto {
+        message: string;
+      }
+
+      // -------------------------
+      // Unassign Role
+      // -------------------------
+      export interface UnassignRoleDto {
+        userIdentifier: string;
+        roleName: string;
+      }
+
+      export interface UnassignRoleResponseDto {
+        message: string;
+      }
+    }
+
+    export namespace Miscellaneous {
+      export interface GetAllowedEmeaOffices {
+        offices: string[];
+      }
+    }
+
+    export namespace Applications {
+      export interface ApplicationDto {
+        id: string;
+        clientId: string;
+        displayName: string;
+      }
+
+      export interface GetApplicationsResponseDto {
+        applications: ApplicationDto[];
+      }
+      export interface GetApplicationsOfUserResponseDto {
+        applications: ApplicationDto[];
+      }
+    }
+
+    export namespace Users {
+      // -------------------------
+      // Departments
+      // -------------------------
+      export interface GetDepartmentsResponseDto {
+        departments: string[];
+      }
+
+      // -------------------------
+      // Import Users
+      // -------------------------
+      export interface ImportUsersRequestDto {
+        users: [
+          {
+            username: string;
+            roles: [
+              {
+                tool: string;
+                access: string;
+              },
+            ];
+            customProperties?: {
+              confidentiality: string;
+              programs: string[];
+            };
+          },
+        ];
+      }
+      export interface ImportUsersResponseDto {
+        created: number;
+        skipped: number;
+        errors: [
+          {
+            error: string;
+            details: string;
+          },
+        ];
+        message: string;
+      }
+
+      // -------------------------
+      // Delete User
+      // -------------------------
+      export interface DeleteUserResponseDto {
+        message: string;
+      }
+
+      // -------------------------
+      // Get Users
+      // -------------------------
+      export interface AuthServiceUserSettingsDto {
+        preferredLanguageCode: string;
+        preferredColorThemeCode: string;
+      }
+
+      export interface AuthServiceUserCustomPropertiesDto {
+        confidentiality: string;
+        region: string;
+        programs: ReadonlyArray<string>;
+      }
+
+      export interface AuthServiceUserDto {
+        id: string;
+        userName: string;
+        email: string;
+        displayName: string;
+        officeLocation: string;
+        employeeId: string;
+        department: string;
+        jobTitle: string;
+        appSettings: AuthServiceUserSettingsDto;
+        customProperties: AuthServiceUserCustomPropertiesDto;
+        applications: Dto.Applications.ApplicationDto[];
+      }
+
+      export interface GetUsersResponseDto {
+        users: AuthServiceUserDto[];
+      }
+      export interface GetUserResponseDto {
+        user: AuthServiceUserDto;
+      }
+
+      // -------------------------
+      // Update EmployeeId
+      // -------------------------
+      export interface UpdateEmployeeIdDto {
+        employeeId: string;
+      }
+      export interface UpdateEmployeeIdResponseDto {
+        message: string;
+      }
+
+      // -------------------------
+      // Update User Settings
+      // -------------------------
+      export interface UpdateUserSettingsDto {
+        preferredLanguageCode: string;
+        preferredColorThemeCode: string;
+      }
+      export interface UpdateUserSettingsResponseDto {
+        message: string;
+      }
+
+      // -------------------------
+      // Update User Properties
+      // -------------------------
+      export interface UpdateUserPropertiesDto {
+        confidentiality: string;
+        programs: string[];
+      }
+      export interface UpdateUserPropertiesResponseDto {
+        message: string;
+      }
+
+      // -------------------------
+      // Claims
+      // -------------------------
+      export interface GetUserClaimsResponseDto {
+        userClaims: string[];
+        roleClaims: string[];
+      }
+      export interface DeleteClaimFromUserResponseDto {
+        message: string;
+      }
+      export interface AddClaimToUserDto {
+        tool: string;
+        privilege: string;
+      }
+      export interface AddClaimToUserDtoResponseDto {
+        message: string;
       }
     }
   }

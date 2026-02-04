@@ -81,4 +81,65 @@ public class LdapClient : ILdapClient
             return new(false, LdapError.ServerError);
         }
     }
+
+    public async Task<LdapUser?> FindUserByUsernameAsync(
+        string username,
+        string domain,
+        CancellationToken ct
+    )
+    {
+        TechnicalUser tu = _config.TechnicalUser;
+
+        string host = tu.GetHost();
+        string bindDn = tu.GetBindDn();
+        string bindPassword = tu.GetBindPassword();
+        string searchFilter = tu.GetSearchFilter(username);
+
+        try
+        {
+            using ILdapConnection connection = _connectionFactory();
+
+            await connection.ConnectAsync(host, LdapConnection.DefaultPort, ct);
+            await connection.BindAsync(bindDn, bindPassword, ct);
+
+            ILdapSearchResults results = await connection.SearchAsync(
+                string.Join(",", domain.Split('.').Select(p => $"dc={p}")),
+                LdapConnection.ScopeSub,
+                searchFilter,
+                null,
+                false,
+                ct
+            );
+
+            if (!await results.HasMoreAsync(ct))
+                return null;
+
+            LdapEntry entry = await results.NextAsync(ct);
+
+            var ldapAttributes = new LdapAttributes(
+                EmployeeId: entry.GetStringValueOrDefault("employeeID") ?? string.Empty,
+                DisplayName: entry.GetStringValueOrDefault("displayName") ?? string.Empty,
+                Department: entry.GetStringValueOrDefault("department") ?? string.Empty,
+                JobTitle: entry.GetStringValueOrDefault("title") ?? string.Empty,
+                OfficeLocation: entry.GetStringValueOrDefault("physicalDeliveryOfficeName")
+                    ?? string.Empty
+            );
+
+            if (
+                string.IsNullOrWhiteSpace(ldapAttributes.OfficeLocation)
+                || !_config.AllowedEmeaOfficeNames.Contains(ldapAttributes.OfficeLocation)
+            )
+            {
+                return null;
+            }
+
+            var passport = new UserPassport(username, domain, string.Empty);
+
+            return new LdapUser(passport, ldapAttributes);
+        }
+        catch (LdapException)
+        {
+            return null;
+        }
+    }
 }

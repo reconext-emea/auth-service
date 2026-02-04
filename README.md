@@ -45,10 +45,10 @@ npm i github:reconext-emea/auth-service
 
 After installation, a scoped package will appear under: `node_modules/@reconext/`.
 
-You can then import AuthService namespace in your frontend code:
+You can then import AuthService namespace in your ts code:
 
 ```ts
-import { AuthService } from "@reconext/auth-service-frontend-types";
+import { AuthService } from "@reconext/auth-service-ts-types";
 ```
 
 > **Client**  
@@ -105,7 +105,7 @@ More details about MSAL configuration requirements can be found in the
 #### Example usage:
 
 ```ts
-import { AuthService } from "@reconext/auth-service-frontend-types";
+import { AuthService } from "@reconext/auth-service-ts-types";
 
 async function loginWithLdap(): Promise<void> {
   //
@@ -237,7 +237,7 @@ calling the same `/connect/token` endpoint:
 #### Example usage:
 
 ```ts
-import { AuthService } from "@reconext/auth-service-frontend-types";
+import { AuthService } from "@reconext/auth-service-ts-types";
 
 async function loginWithMicrosoft(): Promise<void> {
   //
@@ -393,7 +393,7 @@ This is done by sending the existing refresh_token to the same `/connect/token` 
 #### Example usage:
 
 ```ts
-import { AuthService } from "@reconext/auth-service-frontend-types";
+import { AuthService } from "@reconext/auth-service-ts-types";
 
 try {
   //
@@ -506,7 +506,7 @@ Example:
 
 ```ts
 import axios from "axios";
-import { AuthService } from "@reconext/auth-service-frontend-types";
+import { AuthService } from "@reconext/auth-service-ts-types";
 
 const jwtAxios = axios.create();
 
@@ -635,3 +635,56 @@ dotnet ef database update
 ```bash
 dotnet ef migrations list
 ```
+
+## NSwag.ConsoleCore
+
+app.UseSwaggerUI(options =>
+{
+options.SwaggerEndpoint("/swagger/roles/swagger.json", "Roles API");
+options.SwaggerEndpoint("/swagger/users/swagger.json", "Users API");
+options.SwaggerEndpoint("/swagger/applications/swagger.json", "Applications API");
+options.SwaggerEndpoint("/swagger/miscellaneous/swagger.json", "Miscellaneous API");
+});
+
+First of all, command require authorization header, the way to get it is command cbelow:
+
+```bash
+  $pair = "maciej.zablocki:secret123"
+  $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($pair))
+  $encoded
+```
+
+With result like bWFjaWVqLnphYmxvY2tpOjIwMjVfMDlfMjAyNV9NTU0=
+
+Add it at the end /headers:"Authorization=Basic bWFjaWVqLnphYmxvY2tpOjIwMjVfMDlfMjAyNV9NTU0="
+
+```bash
+  nswag openapi2tsclient `
+  /template:axios `
+  /input:http://localhost:5081/swagger/roles/swagger.json `
+  /output:src/api/DevRolesClient.ts `
+  /headers:"Authorization=Basic bWFjaWVqLnphYmxvY2tpOjIwMjVfMDlfMjAyNV9NTU0="
+```
+
+```bash
+nswag openapi2tsclient ^
+  /template:axios ^
+  /input:https://localhost:5081/swagger/users/swagger.json ^
+  /output:src/api/UsersClient.ts
+```
+
+```bash
+nswag openapi2tsclient ^
+  /template:axios ^
+  /input:https://localhost:5081/swagger/applications/swagger.json ^
+  /output:src/api/ApplicationsClient.ts
+```
+
+```bash
+nswag openapi2tsclient ^
+  /template:axios ^
+  /input:https://localhost:5081/swagger/miscellaneous/swagger.json ^
+  /output:src/api/MiscellaneousClient.ts
+```
+
+D:\Repositories\auth-service\ts-types\src

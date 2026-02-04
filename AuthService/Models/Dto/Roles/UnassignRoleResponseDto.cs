@@ -1,8 +1,6 @@
 namespace AuthService.Models.Dto.Roles;
 
-public class UnassignRoleResponseDto
+public sealed record UnassignRoleResponseDto
 {
-    public string User { get; set; } = null!;
-    public string Role { get; set; } = null!;
-    public string Message { get; set; } = "Role removed successfully.";
+    public string Message { get; } = "Role (with claims and application) unassigned successfully.";
 }

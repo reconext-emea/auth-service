@@ -8,8 +8,8 @@
     "declaration": true,
     "emitDeclarationOnly": false,
 
-    "outDir": "./frontend-types/dist",
-    "declarationDir": "./frontend-types/dist",
+    "outDir": "./ts-types/dist",
+    "declarationDir": "./ts-types/dist",
 
     "strict": true,
     "esModuleInterop": true,
@@ -17,5 +17,5 @@
     "skipLibCheck": true,
     "isolatedModules": false
   },
-  "include": ["./frontend-types/src"]
+  "include": ["./ts-types/src"]
 }

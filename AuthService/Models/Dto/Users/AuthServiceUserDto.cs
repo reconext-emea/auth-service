@@ -1,3 +1,5 @@
+using AuthService.Models.Dto.Applications;
+
 namespace AuthService.Models.Dto.Users;
 
 public sealed record AuthServiceUserDto(
@@ -10,7 +12,8 @@ public sealed record AuthServiceUserDto(
     string Department,
     string JobTitle,
     AuthServiceUserSettingsDto AppSettings,
-    AuthServiceUserCustomPropertiesDto CustomProperties
+    AuthServiceUserCustomPropertiesDto CustomProperties,
+    IReadOnlyList<ApplicationDto> Applications
 )
 {
     public static AuthServiceUserDto From(AuthServiceUser user) =>
@@ -24,6 +27,13 @@ public sealed record AuthServiceUserDto(
             user.Department,
             user.JobTitle,
             AuthServiceUserSettingsDto.From(user.AppSettings),
-            AuthServiceUserCustomPropertiesDto.From(user.CustomProperties)
+            AuthServiceUserCustomPropertiesDto.From(user.CustomProperties),
+            [
+                .. user.Applications.Select(app => new ApplicationDto(
+                    app.Application.Id!,
+                    app.Application.ClientId,
+                    app.Application.DisplayName
+                )),
+            ]
         );
 }

@@ -1,7 +1,6 @@
 namespace AuthService.Models.Dto.Roles;
 
-public class DeleteRoleResponseDto
+public sealed record DeleteRoleResponseDto
 {
-    public string Role { get; set; } = null!;
-    public string Message { get; set; } = "Role deleted successfully.";
+    public string Message { get; } = "Role (with claims and application) deleted successfully.";
 }

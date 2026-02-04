@@ -1,7 +1,6 @@
 namespace AuthService.Models.Dto.Roles;
 
-public class CreateRoleResponseDto
+public sealed record CreateRoleResponseDto
 {
-    public string Role { get; set; } = null!;
-    public List<string> RoleClaims { get; set; } = null!;
+    public string Message { get; } = "Role (with claims and application) created successfully.";
 }

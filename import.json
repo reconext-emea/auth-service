@@ -266,6 +266,10 @@
         {
           "tool": "Documents",
           "access": "Reader"
+        },
+        {
+          "tool": "Analytic",
+          "access": "Moderator"
         }
       ],
       "username": "artur.filas"
