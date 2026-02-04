@@ -806,234 +806,234 @@ export namespace AuthService {
       }
     }
   }
+}
 
-  export namespace Dto {
-    export namespace Errors {
-      export interface ErrorResponseDto {}
+export namespace Dto {
+  export namespace Errors {
+    export interface ErrorResponseDto {}
+  }
+
+  export namespace Roles {
+    // -------------------------
+    // Access Levels
+    // -------------------------
+    export interface GetAccessLevelsResponseDto {
+      accessLevels: string[];
     }
 
-    export namespace Roles {
-      // -------------------------
-      // Access Levels
-      // -------------------------
-      export interface GetAccessLevelsResponseDto {
-        accessLevels: string[];
-      }
-
-      // -------------------------
-      // Permission Types
-      // -------------------------
-      export interface GetPermissionTypesResponseDto {
-        permissions: string[];
-      }
-
-      // -------------------------
-      // Get Roles
-      // -------------------------
-      export interface GetRolesResponseDto {
-        roles: string[];
-      }
-
-      export interface GetRolesOfUserResponseDto {
-        roles: string[];
-      }
-
-      // -------------------------
-      // Create Role
-      // -------------------------
-      export interface CreateRoleDto {
-        tool: string;
-        access: string;
-      }
-
-      export interface CreateRoleResponseDto {
-        message: string;
-      }
-
-      // -------------------------
-      // Delete Role
-      // -------------------------
-      export interface DeleteRoleResponseDto {
-        message: string;
-      }
-
-      // -------------------------
-      // Assign Role
-      // -------------------------
-      export interface AssignRoleDto {
-        userIdentifier: string;
-        roleName: string;
-      }
-
-      export interface AssignRoleResponseDto {
-        message: string;
-      }
-
-      // -------------------------
-      // Unassign Role
-      // -------------------------
-      export interface UnassignRoleDto {
-        userIdentifier: string;
-        roleName: string;
-      }
-
-      export interface UnassignRoleResponseDto {
-        message: string;
-      }
+    // -------------------------
+    // Permission Types
+    // -------------------------
+    export interface GetPermissionTypesResponseDto {
+      permissions: string[];
     }
 
-    export namespace Miscellaneous {
-      export interface GetAllowedEmeaOffices {
-        offices: string[];
-      }
+    // -------------------------
+    // Get Roles
+    // -------------------------
+    export interface GetRolesResponseDto {
+      roles: string[];
     }
 
-    export namespace Applications {
-      export interface ApplicationDto {
-        id: string;
-        clientId: string;
-        displayName: string;
-      }
-
-      export interface GetApplicationsResponseDto {
-        applications: ApplicationDto[];
-      }
-      export interface GetApplicationsOfUserResponseDto {
-        applications: ApplicationDto[];
-      }
+    export interface GetRolesOfUserResponseDto {
+      roles: string[];
     }
 
-    export namespace Users {
-      // -------------------------
-      // Departments
-      // -------------------------
-      export interface GetDepartmentsResponseDto {
-        departments: string[];
-      }
+    // -------------------------
+    // Create Role
+    // -------------------------
+    export interface CreateRoleDto {
+      tool: string;
+      access: string;
+    }
 
-      // -------------------------
-      // Import Users
-      // -------------------------
-      export interface ImportUsersRequestDto {
-        users: [
-          {
-            username: string;
-            roles: [
-              {
-                tool: string;
-                access: string;
-              },
-            ];
-            customProperties?: {
-              confidentiality: string;
-              programs: string[];
-            };
-          },
-        ];
-      }
-      export interface ImportUsersResponseDto {
-        created: number;
-        skipped: number;
-        errors: [
-          {
-            error: string;
-            details: string;
-          },
-        ];
-        message: string;
-      }
+    export interface CreateRoleResponseDto {
+      message: string;
+    }
 
-      // -------------------------
-      // Delete User
-      // -------------------------
-      export interface DeleteUserResponseDto {
-        message: string;
-      }
+    // -------------------------
+    // Delete Role
+    // -------------------------
+    export interface DeleteRoleResponseDto {
+      message: string;
+    }
 
-      // -------------------------
-      // Get Users
-      // -------------------------
-      export interface AuthServiceUserSettingsDto {
-        preferredLanguageCode: string;
-        preferredColorThemeCode: string;
-      }
+    // -------------------------
+    // Assign Role
+    // -------------------------
+    export interface AssignRoleDto {
+      userIdentifier: string;
+      roleName: string;
+    }
 
-      export interface AuthServiceUserCustomPropertiesDto {
-        confidentiality: string;
-        region: string;
-        programs: ReadonlyArray<string>;
-      }
+    export interface AssignRoleResponseDto {
+      message: string;
+    }
 
-      export interface AuthServiceUserDto {
-        id: string;
-        userName: string;
-        email: string;
-        displayName: string;
-        officeLocation: string;
-        employeeId: string;
-        department: string;
-        jobTitle: string;
-        appSettings: AuthServiceUserSettingsDto;
-        customProperties: AuthServiceUserCustomPropertiesDto;
-        applications: Dto.Applications.ApplicationDto[];
-      }
+    // -------------------------
+    // Unassign Role
+    // -------------------------
+    export interface UnassignRoleDto {
+      userIdentifier: string;
+      roleName: string;
+    }
 
-      export interface GetUsersResponseDto {
-        users: AuthServiceUserDto[];
-      }
-      export interface GetUserResponseDto {
-        user: AuthServiceUserDto;
-      }
+    export interface UnassignRoleResponseDto {
+      message: string;
+    }
+  }
 
-      // -------------------------
-      // Update EmployeeId
-      // -------------------------
-      export interface UpdateEmployeeIdDto {
-        employeeId: string;
-      }
-      export interface UpdateEmployeeIdResponseDto {
-        message: string;
-      }
+  export namespace Miscellaneous {
+    export interface GetAllowedEmeaOffices {
+      offices: string[];
+    }
+  }
 
-      // -------------------------
-      // Update User Settings
-      // -------------------------
-      export interface UpdateUserSettingsDto {
-        preferredLanguageCode: string;
-        preferredColorThemeCode: string;
-      }
-      export interface UpdateUserSettingsResponseDto {
-        message: string;
-      }
+  export namespace Applications {
+    export interface ApplicationDto {
+      id: string;
+      clientId: string;
+      displayName: string;
+    }
 
-      // -------------------------
-      // Update User Properties
-      // -------------------------
-      export interface UpdateUserPropertiesDto {
-        confidentiality: string;
-        programs: string[];
-      }
-      export interface UpdateUserPropertiesResponseDto {
-        message: string;
-      }
+    export interface GetApplicationsResponseDto {
+      applications: ApplicationDto[];
+    }
+    export interface GetApplicationsOfUserResponseDto {
+      applications: ApplicationDto[];
+    }
+  }
 
-      // -------------------------
-      // Claims
-      // -------------------------
-      export interface GetUserClaimsResponseDto {
-        userClaims: string[];
-        roleClaims: string[];
-      }
-      export interface DeleteClaimFromUserResponseDto {
-        message: string;
-      }
-      export interface AddClaimToUserDto {
-        tool: string;
-        privilege: string;
-      }
-      export interface AddClaimToUserDtoResponseDto {
-        message: string;
-      }
+  export namespace Users {
+    // -------------------------
+    // Departments
+    // -------------------------
+    export interface GetDepartmentsResponseDto {
+      departments: string[];
+    }
+
+    // -------------------------
+    // Import Users
+    // -------------------------
+    export interface ImportUsersRequestDto {
+      users: [
+        {
+          username: string;
+          roles: [
+            {
+              tool: string;
+              access: string;
+            },
+          ];
+          customProperties?: {
+            confidentiality: string;
+            programs: string[];
+          };
+        },
+      ];
+    }
+    export interface ImportUsersResponseDto {
+      created: number;
+      skipped: number;
+      errors: [
+        {
+          error: string;
+          details: string;
+        },
+      ];
+      message: string;
+    }
+
+    // -------------------------
+    // Delete User
+    // -------------------------
+    export interface DeleteUserResponseDto {
+      message: string;
+    }
+
+    // -------------------------
+    // Get Users
+    // -------------------------
+    export interface AuthServiceUserSettingsDto {
+      preferredLanguageCode: string;
+      preferredColorThemeCode: string;
+    }
+
+    export interface AuthServiceUserCustomPropertiesDto {
+      confidentiality: string;
+      region: string;
+      programs: ReadonlyArray<string>;
+    }
+
+    export interface AuthServiceUserDto {
+      id: string;
+      userName: string;
+      email: string;
+      displayName: string;
+      officeLocation: string;
+      employeeId: string;
+      department: string;
+      jobTitle: string;
+      appSettings: AuthServiceUserSettingsDto;
+      customProperties: AuthServiceUserCustomPropertiesDto;
+      applications: Dto.Applications.ApplicationDto[];
+    }
+
+    export interface GetUsersResponseDto {
+      users: AuthServiceUserDto[];
+    }
+    export interface GetUserResponseDto {
+      user: AuthServiceUserDto;
+    }
+
+    // -------------------------
+    // Update EmployeeId
+    // -------------------------
+    export interface UpdateEmployeeIdDto {
+      employeeId: string;
+    }
+    export interface UpdateEmployeeIdResponseDto {
+      message: string;
+    }
+
+    // -------------------------
+    // Update User Settings
+    // -------------------------
+    export interface UpdateUserSettingsDto {
+      preferredLanguageCode: string;
+      preferredColorThemeCode: string;
+    }
+    export interface UpdateUserSettingsResponseDto {
+      message: string;
+    }
+
+    // -------------------------
+    // Update User Properties
+    // -------------------------
+    export interface UpdateUserPropertiesDto {
+      confidentiality: string;
+      programs: string[];
+    }
+    export interface UpdateUserPropertiesResponseDto {
+      message: string;
+    }
+
+    // -------------------------
+    // Claims
+    // -------------------------
+    export interface GetUserClaimsResponseDto {
+      userClaims: string[];
+      roleClaims: string[];
+    }
+    export interface DeleteClaimFromUserResponseDto {
+      message: string;
+    }
+    export interface AddClaimToUserDto {
+      tool: string;
+      privilege: string;
+    }
+    export interface AddClaimToUserDtoResponseDto {
+      message: string;
     }
   }
 }
