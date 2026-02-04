@@ -1,10 +1,11 @@
 using System.Security.Cryptography.X509Certificates;
 using AuthService.Clients.EntraIdClient;
 using AuthService.Clients.LdapClient;
+using AuthService.Constants;
 using AuthService.Data;
 using AuthService.Models;
 using AuthService.Services.OpenIddict;
-using AuthService.Services.UserImport;
+using AuthService.Services.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -17,17 +18,13 @@ var config = builder.Configuration;
 
 var services = builder.Services;
 
-services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("roles", new OpenApiInfo { Title = "Roles API", Version = "v1" });
-    c.SwaggerDoc("users", new OpenApiInfo { Title = "Users API", Version = "v1" });
-});
-
 services.AddSingleton(sp =>
 {
     var cfg = sp.GetRequiredService<IConfiguration>();
     return new LdapConfig(cfg);
 });
+
+services.AddSingleton<OfficeLocationToRegionAdapter>();
 
 services.AddScoped<ILdapClient>(sp =>
 {
@@ -67,7 +64,7 @@ services.AddDbContext<AuthServiceDbContext>(options =>
     options.UseOpenIddict();
 });
 
-services.AddScoped<IUserImportService, UserImportService>();
+services.AddScoped<IUserService, UserService>();
 
 // ---------- Identity ----------
 services
@@ -165,14 +162,40 @@ services
     });
 
 // ---------- Auth / API ----------
-services.AddAuthentication();
+// services.AddAuthentication();
+services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = OpenIddict
+        .Validation
+        .AspNetCore
+        .OpenIddictValidationAspNetCoreDefaults
+        .AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIddict
+        .Validation
+        .AspNetCore
+        .OpenIddictValidationAspNetCoreDefaults
+        .AuthenticationScheme;
+});
+
 services.AddAuthorization();
 
 services.AddControllers();
 services.AddEndpointsApiExplorer();
+
 services.AddSwaggerGen(options =>
 {
     options.SupportNonNullableReferenceTypes();
+
+    options.SwaggerDoc("roles", new OpenApiInfo { Title = "Roles API", Version = "v1" });
+    options.SwaggerDoc("users", new OpenApiInfo { Title = "Users API", Version = "v1" });
+    options.SwaggerDoc(
+        "applications",
+        new OpenApiInfo { Title = "Applications API", Version = "v1" }
+    );
+    options.SwaggerDoc(
+        "miscellaneous",
+        new OpenApiInfo { Title = "Miscellaneous API", Version = "v1" }
+    );
 });
 
 services.AddCors(options =>
@@ -191,92 +214,88 @@ services.AddCors(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AuthServiceDbContext>();
-    db.Database.Migrate();
-}
-
 app.UseRouting();
 app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.Use(
-    async (context, next) =>
-    {
-        var logger = context
-            .RequestServices.GetRequiredService<ILoggerFactory>()
-            .CreateLogger("SwaggerAuth");
+// app.Use(
+//     async (context, next) =>
+//     {
+//         var logger = context
+//             .RequestServices.GetRequiredService<ILoggerFactory>()
+//             .CreateLogger("SwaggerAuth");
 
-        if (context.Request.Path.StartsWithSegments("/swagger"))
-        {
-            string? authHeader = context.Request.Headers.Authorization;
+//         if (context.Request.Path.StartsWithSegments("/swagger"))
+//         {
+//             string? authHeader = context.Request.Headers.Authorization;
 
-            if (
-                authHeader is null
-                || !authHeader.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                context.Response.StatusCode = 401;
-                context.Response.Headers.WWWAuthenticate =
-                    $"Basic realm=\"Swagger-{Guid.NewGuid()}\"";
-                context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
-                context.Response.Headers.Pragma = "no-cache";
-                context.Response.Headers.Expires = "0";
-                return;
-            }
+//             if (
+//                 authHeader is null
+//                 || !authHeader.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase)
+//             )
+//             {
+//                 context.Response.StatusCode = 401;
+//                 context.Response.Headers.WWWAuthenticate =
+//                     $"Basic realm=\"Swagger-{Guid.NewGuid()}\"";
+//                 context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+//                 context.Response.Headers.Pragma = "no-cache";
+//                 context.Response.Headers.Expires = "0";
+//                 return;
+//             }
 
-            var encoded = authHeader["Basic ".Length..].Trim();
-            var bytes = Convert.FromBase64String(encoded);
-            var credentials = System.Text.Encoding.UTF8.GetString(bytes).Split(':', 2);
+//             var encoded = authHeader["Basic ".Length..].Trim();
+//             var bytes = Convert.FromBase64String(encoded);
+//             var credentials = System.Text.Encoding.UTF8.GetString(bytes).Split(':', 2);
 
-            var username = credentials[0];
-            var password = credentials[1];
+//             var username = credentials[0];
+//             var password = credentials[1];
 
-            string[] allowedUsernames =
-                config
-                    .GetSection("Swagger")["AllowedUsernames"]
-                    ?.Split(
-                        "::",
-                        StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
-                    )
-                ?? [];
+//             string[] allowedUsernames =
+//                 config
+//                     .GetSection("Swagger")["AllowedUsernames"]
+//                     ?.Split(
+//                         "::",
+//                         StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+//                     )
+//                 ?? [];
 
-            if (!allowedUsernames.Contains(username))
-            {
-                logger.LogWarning(
-                    $"Swagger access denied: user '{username}' is not allowed.",
-                    username
-                );
-                context.Response.StatusCode = 401;
+//             if (!allowedUsernames.Contains(username))
+//             {
+//                 logger.LogWarning(
+//                     $"Swagger access denied: user '{username}' is not allowed.",
+//                     username
+//                 );
+//                 context.Response.StatusCode = 401;
 
-                return;
-            }
+//                 return;
+//             }
 
-            var ldap = context.RequestServices.GetRequiredService<ILdapClient>();
-            var passport = new UserPassport(username, "reconext.com", password);
-            var result = await ldap.AuthenticateAsync(passport);
+//             var ldap = context.RequestServices.GetRequiredService<ILdapClient>();
+//             var passport = new UserPassport(username, "reconext.com", password);
+//             var result = await ldap.AuthenticateAsync(passport);
 
-            if (!result.Success)
-            {
-                logger.LogWarning("Swagger LDAP auth failed for user.");
-                context.Response.StatusCode = 401;
+//             if (!result.Success)
+//             {
+//                 logger.LogWarning("Swagger LDAP auth failed for user.");
+//                 context.Response.StatusCode = 401;
 
-                return;
-            }
-        }
+//                 return;
+//             }
+//         }
 
-        await next();
-    }
-);
+//         await next();
+//     }
+// );
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/roles/swagger.json", "Roles API");
     options.SwaggerEndpoint("/swagger/users/swagger.json", "Users API");
+    options.SwaggerEndpoint("/swagger/applications/swagger.json", "Applications API");
+    options.SwaggerEndpoint("/swagger/miscellaneous/swagger.json", "Miscellaneous API");
 });
 
 app.MapControllers();

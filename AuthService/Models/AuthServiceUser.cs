@@ -1,5 +1,7 @@
 using AuthService.Clients.GraphClient;
 using AuthService.Clients.LdapClient;
+using AuthService.Constants;
+using AuthService.Models.Dto.Users;
 using Microsoft.AspNetCore.Identity;
 
 namespace AuthService.Models;
@@ -15,41 +17,15 @@ public class AuthServiceUser : IdentityUser
     public AuthServiceUserAppSettings AppSettings { get; set; } = new();
     public AuthServiceUserCustomProperties CustomProperties { get; set; } = new();
 
+    public ICollection<AuthServiceUserApplication> Applications { get; set; } = [];
+
     private AuthServiceUser() { }
 
-    private AuthServiceUser(string username)
-    {
-        UserName = NormalizeUserName(username);
-        Email = BuildEmail(username, "reconext.com");
-    }
-
-    private AuthServiceUser(LdapUser ldapUser)
-    {
-        UserName = NormalizeUserName(ldapUser.Username);
-        Email = BuildEmail(ldapUser.Username, ldapUser.Domain);
-        DisplayName = ldapUser.Attributes.DisplayName;
-        EmployeeId = ldapUser.Attributes.EmployeeId;
-        Department = ldapUser.Attributes.Department;
-        JobTitle = ldapUser.Attributes.JobTitle;
-        OfficeLocation = ldapUser.Attributes.OfficeLocation;
-    }
-
-    private AuthServiceUser(GraphUser graphUser)
-    {
-        UserName = NormalizeUserName(graphUser.Username);
-        Email = NormalizeEmail(graphUser.Mail);
-        DisplayName = graphUser.Attributes.DisplayName;
-        EmployeeId = graphUser.Attributes.EmployeeId;
-        Department = graphUser.Attributes.Department;
-        JobTitle = graphUser.Attributes.JobTitle;
-        OfficeLocation = graphUser.Attributes.OfficeLocation;
-    }
-
-    public static AuthServiceUser CreateFromImport(string username) => new(username);
-
-    public static AuthServiceUser CreateFromLdap(LdapUser ldapUser) => new(ldapUser);
-
-    public AuthServiceUser UpdateFromLdap(LdapUser ldapUser)
+    private AuthServiceUser(
+        LdapUser ldapUser,
+        OfficeLocationToRegionAdapter adapter,
+        UpdateUserPropertiesDto? dto
+    )
     {
         UserName = NormalizeUserName(ldapUser.Username);
         Email = BuildEmail(ldapUser.Username, ldapUser.Domain);
@@ -59,14 +35,14 @@ public class AuthServiceUser : IdentityUser
         JobTitle = ldapUser.Attributes.JobTitle;
         OfficeLocation = ldapUser.Attributes.OfficeLocation;
 
-        CustomProperties.UpdateProperties(this, null);
-
-        return this;
+        CustomProperties.UpdateProperties(this, adapter, dto);
     }
 
-    public static AuthServiceUser CreateFromGraph(GraphUser graphUser) => new(graphUser);
-
-    public AuthServiceUser UpdateFromGraph(GraphUser graphUser)
+    private AuthServiceUser(
+        GraphUser graphUser,
+        OfficeLocationToRegionAdapter adapter,
+        UpdateUserPropertiesDto? dto
+    )
     {
         UserName = NormalizeUserName(graphUser.Username);
         Email = NormalizeEmail(graphUser.Mail);
@@ -76,17 +52,70 @@ public class AuthServiceUser : IdentityUser
         JobTitle = graphUser.Attributes.JobTitle;
         OfficeLocation = graphUser.Attributes.OfficeLocation;
 
-        CustomProperties.UpdateProperties(this, null);
+        CustomProperties.UpdateProperties(this, adapter, dto);
+    }
+
+    public static AuthServiceUser CreateFromLdap(
+        LdapUser ldapUser,
+        OfficeLocationToRegionAdapter adapter,
+        UpdateUserPropertiesDto? dto = null
+    ) => new(ldapUser, adapter, dto);
+
+    public AuthServiceUser UpdateFromLdap(
+        LdapUser ldapUser,
+        OfficeLocationToRegionAdapter adapter,
+        UpdateUserPropertiesDto? dto = null
+    )
+    {
+        UserName = NormalizeUserName(ldapUser.Username);
+        Email = BuildEmail(ldapUser.Username, ldapUser.Domain);
+        DisplayName = ldapUser.Attributes.DisplayName;
+        EmployeeId = ldapUser.Attributes.EmployeeId;
+        Department = ldapUser.Attributes.Department;
+        JobTitle = ldapUser.Attributes.JobTitle;
+        OfficeLocation = ldapUser.Attributes.OfficeLocation;
+
+        CustomProperties.UpdateProperties(this, adapter, dto);
 
         return this;
     }
 
-    private static string NormalizeUserName(string username) => username.ToLower();
+    public static AuthServiceUser CreateFromGraph(
+        GraphUser graphUser,
+        OfficeLocationToRegionAdapter adapter,
+        UpdateUserPropertiesDto? dto = null
+    ) => new(graphUser, adapter, dto);
 
-    private static string NormalizeEmail(string mail) => mail.ToLower();
+    public AuthServiceUser UpdateFromGraph(
+        GraphUser graphUser,
+        OfficeLocationToRegionAdapter adapter,
+        UpdateUserPropertiesDto? dto = null
+    )
+    {
+        UserName = NormalizeUserName(graphUser.Username);
+        Email = NormalizeEmail(graphUser.Mail);
+        DisplayName = graphUser.Attributes.DisplayName;
+        EmployeeId = graphUser.Attributes.EmployeeId;
+        Department = graphUser.Attributes.Department;
+        JobTitle = graphUser.Attributes.JobTitle;
+        OfficeLocation = graphUser.Attributes.OfficeLocation;
+
+        CustomProperties.UpdateProperties(this, adapter, dto);
+
+        return this;
+    }
+
+    private static string NormalizeUserName(string username) => username.ToLowerInvariant();
+
+    private static string NormalizeEmail(string mail) => mail.ToLowerInvariant();
 
     private static string BuildEmail(string username, string domain)
     {
         return NormalizeEmail($"{NormalizeUserName(username)}@{domain}");
+    }
+
+    public void SetEmployeeId(string employeeId)
+    {
+        EmployeeId = (employeeId ?? string.Empty).Trim();
     }
 }

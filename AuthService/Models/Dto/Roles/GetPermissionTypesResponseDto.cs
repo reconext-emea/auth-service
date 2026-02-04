@@ -1,6 +1,3 @@
 namespace AuthService.Models.Dto.Roles;
 
-public class GetPermissionTypesResponseDto
-{
-    public List<string> Permissions { get; set; } = null!;
-}
+public sealed record GetPermissionTypesResponseDto(List<string> Permissions);

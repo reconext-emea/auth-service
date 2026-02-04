@@ -33,6 +33,7 @@ Each role follows a strict naming convention and corresponds to a predefined acc
 - Documents.Moderator
 - AzureBlobStorage.Administrator
 - Billing.Contributor
+- Ecn.Administrator
 
 ## Role Claims (internal, resolved from roles)
 

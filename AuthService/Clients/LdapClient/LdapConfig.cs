@@ -15,7 +15,7 @@ public class LdapConfig(IConfiguration config)
     {
         string value = RequireEnv(config, "Ldap", "AllowedEmeaOfficeNames");
         IEnumerable<string> enumerableValue = ToEnumerable(value);
-        return enumerableValue.ToList();
+        return [.. enumerableValue];
     }
 
     private static string RequireEnv(IConfiguration config, string section, string key)

@@ -1,10 +1,8 @@
-using AuthService.Constants;
+namespace AuthService.Constants;
 
-namespace AuthService.Authorization;
-
-public static class PermissionMap
+public static class RoleAccessLevelPermissions
 {
-    public static readonly Dictionary<string, string[]> AccessLevels = new()
+    private static readonly Dictionary<string, IReadOnlyList<string>> Map = new()
     {
         { RoleAccessLevel.Viewer, new[] { Permission.View } },
         { RoleAccessLevel.Reader, new[] { Permission.View, Permission.Read } },
@@ -37,9 +35,8 @@ public static class PermissionMap
         },
     };
 
-    public static IEnumerable<string> ResolvePermissions(string tool, string access)
+    public static IReadOnlyList<string> From(string roleAccessLevel)
     {
-        foreach (var p in AccessLevels[access])
-            yield return $"role.{tool.ToLower()}.{p}";
+        return Map.TryGetValue(roleAccessLevel, out var permissions) ? permissions : [];
     }
 }

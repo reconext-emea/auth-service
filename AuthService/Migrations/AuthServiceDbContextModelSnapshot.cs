@@ -160,6 +160,21 @@ namespace AuthService.Migrations
                     b.ToTable("AspNetUsersAppSettings", (string)null);
                 });
 
+            modelBuilder.Entity("AuthService.Models.AuthServiceUserApplication", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ApplicationId")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "ApplicationId");
+
+                    b.HasIndex("ApplicationId");
+
+                    b.ToTable("AspNetUsersOpenIddictApplications", (string)null);
+                });
+
             modelBuilder.Entity("AuthService.Models.AuthServiceUserCustomProperties", b =>
                 {
                     b.Property<string>("Id")
@@ -539,6 +554,25 @@ namespace AuthService.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("AuthService.Models.AuthServiceUserApplication", b =>
+                {
+                    b.HasOne("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", "Application")
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AuthService.Models.AuthServiceUser", "User")
+                        .WithMany("Applications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Application");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("AuthService.Models.AuthServiceUserCustomProperties", b =>
                 {
                     b.HasOne("AuthService.Models.AuthServiceUser", "User")
@@ -629,6 +663,8 @@ namespace AuthService.Migrations
                 {
                     b.Navigation("AppSettings")
                         .IsRequired();
+
+                    b.Navigation("Applications");
 
                     b.Navigation("CustomProperties")
                         .IsRequired();

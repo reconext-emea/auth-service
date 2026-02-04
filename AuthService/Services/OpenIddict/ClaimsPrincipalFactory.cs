@@ -131,6 +131,16 @@ public class ClaimsPrincipalFactory(
             }
         }
 
+        // ---------- LOAD USER CLAIMS ----------
+        var userClaims = await _userManager.GetClaimsAsync(user);
+
+        foreach (var claim in userClaims)
+        {
+            identity.AddClaim(
+                new Claim(claim.Type, claim.Value).SetDestinations(Destinations.AccessToken)
+            );
+        }
+
         var principal = new ClaimsPrincipal(identity);
         principal.SetScopes(scopes);
 

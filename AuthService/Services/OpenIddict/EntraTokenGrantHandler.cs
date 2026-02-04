@@ -1,12 +1,11 @@
 using System.Security.Claims;
-using System.Text.Json;
 using AuthService.Clients.EntraIdClient;
 using AuthService.Clients.GraphClient;
+using AuthService.Constants;
 using AuthService.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
-using Microsoft.Graph.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -16,12 +15,14 @@ namespace AuthService.Services.OpenIddict;
 public class EntraTokenGrantHandler(
     IEntraIdClient entraId,
     UserManager<AuthServiceUser> userManager,
-    IClaimsPrincipalFactory claimsFactory
+    IClaimsPrincipalFactory claimsFactory,
+    OfficeLocationToRegionAdapter adapter
 ) : IOpenIddictServerHandler<OpenIddictServerEvents.HandleTokenRequestContext>
 {
     private readonly IEntraIdClient _entraId = entraId;
     private readonly UserManager<AuthServiceUser> _userManager = userManager;
     private readonly IClaimsPrincipalFactory _claimsFactory = claimsFactory;
+    private readonly OfficeLocationToRegionAdapter _adapter = adapter;
 
     public async ValueTask HandleAsync(OpenIddictServerEvents.HandleTokenRequestContext context)
     {
@@ -73,11 +74,10 @@ public class EntraTokenGrantHandler(
 
         var graphFactory = new Clients.GraphClient.GraphClientFactory();
         GraphServiceClient graph = graphFactory.InitializeFromAcquiredGraphToken(entraGraphToken);
-        User? user;
+        Microsoft.Graph.Models.User? user;
 
         try
         {
-            // user = await graph.Me.GetAsync();
             user = await graph.Me.GetAsync(rc =>
             {
                 rc.QueryParameters.Select =
@@ -113,11 +113,6 @@ public class EntraTokenGrantHandler(
             return;
         }
 
-        // Console.WriteLine("graphUser");
-        // Console.WriteLine(
-        //     JsonSerializer.Serialize(user, new JsonSerializerOptions { WriteIndented = true })
-        // );
-
         var graphAttributes = new GraphAttributes(
             EmployeeId: user.EmployeeId ?? string.Empty,
             DisplayName: user.DisplayName ?? string.Empty,
@@ -125,8 +120,6 @@ public class EntraTokenGrantHandler(
             JobTitle: user.JobTitle ?? string.Empty,
             OfficeLocation: user.OfficeLocation ?? string.Empty
         );
-
-        // var graphOfficeLocation = user.OfficeLocation;
 
         if (string.IsNullOrWhiteSpace(graphAttributes.OfficeLocation))
         {
@@ -183,7 +176,7 @@ public class EntraTokenGrantHandler(
 
         if (authServiceUser == null)
         {
-            authServiceUser = AuthServiceUser.CreateFromGraph(graphUser);
+            authServiceUser = AuthServiceUser.CreateFromGraph(graphUser, _adapter);
             IdentityResult identityResult = await _userManager.CreateAsync(authServiceUser);
 
             if (!identityResult.Succeeded)
@@ -198,7 +191,7 @@ public class EntraTokenGrantHandler(
         }
         else
         {
-            authServiceUser.UpdateFromGraph(graphUser);
+            authServiceUser.UpdateFromGraph(graphUser, _adapter);
             await _userManager.UpdateAsync(authServiceUser);
         }
 

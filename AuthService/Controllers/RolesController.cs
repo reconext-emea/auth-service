@@ -1,12 +1,14 @@
-using System.Security.Claims;
-using AuthService.Authorization;
 using AuthService.Constants;
-using AuthService.Helpers.Roles;
+using AuthService.Data;
 using AuthService.Models;
 using AuthService.Models.Dto.Errors;
 using AuthService.Models.Dto.Roles;
+using AuthService.Services.Identity;
+using AuthService.Services.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OpenIddict.Abstractions;
 
 namespace AuthService.Controllers;
 
@@ -15,11 +17,18 @@ namespace AuthService.Controllers;
 [Route("api/roles")]
 public class RolesController(
     RoleManager<IdentityRole> roleManager,
-    UserManager<AuthServiceUser> userManager
+    UserManager<AuthServiceUser> userManager,
+    IOpenIddictApplicationManager appManager,
+    IUserService userService,
+    AuthServiceDbContext dbContext
 ) : ControllerBase
 {
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly UserManager<AuthServiceUser> _userManager = userManager;
+    private readonly IOpenIddictApplicationManager _appManager = appManager;
+
+    private readonly IUserService _userService = userService;
+    private readonly AuthServiceDbContext _dbContext = dbContext;
 
     // --------------------------------------------------------------
     // Access Levels
@@ -27,7 +36,7 @@ public class RolesController(
     [HttpGet("access-levels")]
     public ActionResult<GetAccessLevelsResponseDto> GetAccessLevels()
     {
-        return Ok(new GetAccessLevelsResponseDto { AccessLevels = [.. RoleAccessLevel.Options] });
+        return Ok(new GetAccessLevelsResponseDto([.. RoleAccessLevel.Options]));
     }
 
     // --------------------------------------------------------------
@@ -36,7 +45,7 @@ public class RolesController(
     [HttpGet("permissions")]
     public ActionResult<GetPermissionTypesResponseDto> GetPermissionTypes()
     {
-        return Ok(new GetPermissionTypesResponseDto { Permissions = [.. Permission.Options] });
+        return Ok(new GetPermissionTypesResponseDto([.. Permission.Options]));
     }
 
     // --------------------------------------------------------------
@@ -47,7 +56,7 @@ public class RolesController(
     {
         List<string> roles = [.. _roleManager.Roles.Select(r => r.Name!)];
 
-        return Ok(new GetRolesResponseDto { Roles = roles });
+        return Ok(new GetRolesResponseDto(roles));
     }
 
     // --------------------------------------------------------------
@@ -56,13 +65,16 @@ public class RolesController(
     [HttpGet("of-user/{userIdentifier}")]
     public async Task<ActionResult<GetRolesOfUserResponseDto>> GetRolesOfUser(string userIdentifier)
     {
-        AuthServiceUser? user = await FindUser(userIdentifier);
+        // AuthServiceUser? user = await FindUser(userIdentifier);
+
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(userIdentifier);
+
         if (user == null)
             return NotFound(new ErrorResponseDto { Error = $"User '{userIdentifier}' not found." });
 
         IList<string> roles = await _userManager.GetRolesAsync(user);
 
-        return Ok(new GetRolesOfUserResponseDto { Roles = [.. roles] });
+        return Ok(new GetRolesOfUserResponseDto([.. roles]));
     }
 
     // --------------------------------------------------------------
@@ -71,78 +83,147 @@ public class RolesController(
     [HttpPost]
     public async Task<ActionResult<CreateRoleResponseDto>> CreateRole([FromBody] CreateRoleDto dto)
     {
-        // var RoleName = $"{dto.Tool}.{dto.Access}";
-
-        // if (!RoleNameValidator.IsValid(RoleName))
-        //     return BadRequest(
-        //         new ErrorResponseDto { Error = "Invalid role format. Expected Tool.Access" }
-        //     );
-
-        // // Validate access level
-        // if (!RoleAccessLevel.IsValid(dto.Access))
-        //     return BadRequest(
-        //         new ErrorResponseDto { Error = $"Unknown access level: {dto.Access}" }
-        //     );
-
-        if (!RoleNameValidator.IsValid(dto, out var name, out var error))
-            return BadRequest(error);
-
-        // Check if role exists
-        if (await _roleManager.RoleExistsAsync(name))
-            return Conflict(new ErrorResponseDto { Error = "Role already exists" });
-
-        // Create role
-        var role = new IdentityRole(name);
-        var result = await _roleManager.CreateAsync(role);
-
-        if (!result.Succeeded)
-            return StatusCode(
-                StatusCodes.Status500InternalServerError,
-                new ErrorResponseDto
-                {
-                    Error = "Role creation failed.",
-                    Details = string.Join(", ", result.Errors.Select(e => e.Description)),
-                }
-            );
-
-        // Resolve permissions
-        var permissions = PermissionMap.ResolvePermissions(dto.Tool, dto.Access);
-
-        // Add claims
-        foreach (var perm in permissions)
+        if (
+            !RoleService.TryCreateRole(
+                dto,
+                out var roleName,
+                out var role,
+                out var roleClaims,
+                out var descriptorClientId,
+                out var descriptor,
+                out var error
+            )
+        )
         {
-            await _roleManager.AddClaimAsync(role, new Claim("permission", perm));
+            return BadRequest(error);
         }
 
-        return Ok(new CreateRoleResponseDto { Role = role.Name!, RoleClaims = [.. permissions] });
+        await using var tx = await _dbContext.Database.BeginTransactionAsync();
+
+        try
+        {
+            // --- 1) Check role exists
+            if (await _roleManager.RoleExistsAsync(roleName))
+                return Conflict(new ErrorResponseDto { Error = "Role already exists." });
+
+            // --- 2) Check application exists (avoid duplicate client id)
+            if (await _appManager.FindByClientIdAsync(descriptorClientId) is not null)
+                return Conflict(new ErrorResponseDto { Error = "Application already exists." });
+
+            // --- 3) Create role
+            var roleResult = await _roleManager.CreateAsync(role);
+
+            if (!roleResult.Succeeded)
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new ErrorResponseDto
+                    {
+                        Error = "Role creation failed.",
+                        Details = string.Join(", ", roleResult.Errors.Select(e => e.Description)),
+                    }
+                );
+
+            // --- 4) Add permission claims
+            foreach (var claim in roleClaims)
+            {
+                var claimResult = await _roleManager.AddClaimAsync(role, claim);
+                if (!claimResult.Succeeded)
+                {
+                    return StatusCode(
+                        StatusCodes.Status500InternalServerError,
+                        new ErrorResponseDto
+                        {
+                            Error = "Adding role claims failed.",
+                            Details = string.Join(
+                                ", ",
+                                claimResult.Errors.Select(e => e.Description)
+                            ),
+                        }
+                    );
+                }
+            }
+
+            // --- 5) Create OpenIddict application
+            await _appManager.CreateAsync(descriptor);
+
+            // --- 6) Commit transaction
+            await tx.CommitAsync();
+
+            return Ok(new CreateRoleResponseDto());
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync();
+
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new ErrorResponseDto { Error = "Transaction failed.", Details = ex.Message }
+            );
+        }
     }
 
     // --------------------------------------------------------------
     // Delete Role
     // --------------------------------------------------------------
-    [HttpDelete("{roleIdentifier}")]
-    public async Task<ActionResult<DeleteRoleResponseDto>> DeleteRole(string roleIdentifier)
+    [HttpDelete("{roleName}")]
+    public async Task<ActionResult<DeleteRoleResponseDto>> DeleteRole(string roleName)
     {
-        // Find role by Id / Name
-        IdentityRole? role = await FindRole(roleIdentifier);
+        var role = await _roleManager.FindByNameAsync(roleName);
         if (role == null)
-            return NotFound(new ErrorResponseDto { Error = $"Role '{roleIdentifier}' not found." });
+            return NotFound(new ErrorResponseDto { Error = $"Role '{roleName}' not found." });
 
-        IdentityResult? result = await _roleManager.DeleteAsync(role);
+        if (
+            !RoleService.TryDestructureRoleName(
+                roleName,
+                out var tool,
+                out var access,
+                out var error
+            )
+        )
+        {
+            return BadRequest(error);
+        }
 
-        if (!result.Succeeded)
+        var clientId = RoleService.ToKebabCase(tool);
+
+        await using var tx = await _dbContext.Database.BeginTransactionAsync();
+
+        try
+        {
+            // 1) Delete OpenIddict application (if it exists)
+            var app = await _appManager.FindByClientIdAsync(clientId);
+
+            if (app != null)
+            {
+                await _appManager.DeleteAsync(app);
+            }
+
+            // 2) Delete role
+            var result = await _roleManager.DeleteAsync(role);
+
+            if (!result.Succeeded)
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new ErrorResponseDto
+                    {
+                        Error = "Role deletion failed.",
+                        Details = string.Join(", ", result.Errors.Select(e => e.Description)),
+                    }
+                );
+
+            await tx.CommitAsync();
+
+            return Ok(new DeleteRoleResponseDto());
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync();
+
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new ErrorResponseDto
-                {
-                    Error = "Role deletion failed.",
-                    Details = string.Join(", ", result.Errors.Select(e => e.Description)),
-                }
+                new ErrorResponseDto { Error = "Transaction failed.", Details = ex.Message }
             );
-
-        return Ok(
-            new DeleteRoleResponseDto { Role = role.Name!, Message = "Role deleted successfully." }
-        );
+        }
     }
 
     // --------------------------------------------------------------
@@ -151,49 +232,95 @@ public class RolesController(
     [HttpPost("assign")]
     public async Task<ActionResult<AssignRoleResponseDto>> AssignRole([FromBody] AssignRoleDto dto)
     {
-        // Find user by Id / UserName / Email
-        AuthServiceUser? user = await FindUser(dto.UserIdentifier);
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(dto.UserIdentifier);
+        // var user = await FindUser(dto.UserIdentifier);
         if (user == null)
             return NotFound(
                 new ErrorResponseDto { Error = $"User '{dto.UserIdentifier}' not found." }
             );
 
-        // Find role by Id / Name
-        IdentityRole? role = await FindRole(dto.RoleIdentifier);
+        var role = await _roleManager.FindByNameAsync(dto.RoleName);
         if (role == null)
-            return NotFound(
-                new ErrorResponseDto { Error = $"Role '{dto.RoleIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"Role '{dto.RoleName}' not found." });
 
-        string roleName = role.Name!;
+        if (
+            !RoleService.TryDestructureRoleName(
+                dto.RoleName,
+                out var tool,
+                out var access,
+                out var error
+            )
+        )
+        {
+            return BadRequest(error);
+        }
 
-        // Check if user already has the role
-        if (await _userManager.IsInRoleAsync(user, roleName))
-            return Conflict(
-                new ErrorResponseDto { Error = $"User already has role '{roleName}'." }
-            );
+        var clientId = RoleService.ToKebabCase(tool);
 
-        // Assign role
-        IdentityResult? result = await _userManager.AddToRoleAsync(user, roleName);
+        await using var tx = await _dbContext.Database.BeginTransactionAsync();
 
-        if (!result.Succeeded)
+        try
+        {
+            // 1) Check if user already has the role
+            if (await _userManager.IsInRoleAsync(user, dto.RoleName))
+                return Conflict(
+                    new ErrorResponseDto { Error = $"User already has role '{dto.RoleName}'." }
+                );
+
+            // 2) Assign role
+            var roleResult = await _userManager.AddToRoleAsync(user, dto.RoleName);
+            if (!roleResult.Succeeded)
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new ErrorResponseDto
+                    {
+                        Error = "Role assignment failed.",
+                        Details = string.Join(", ", roleResult.Errors.Select(e => e.Description)),
+                    }
+                );
+
+            // 3) Find application by client id (derived from role/tool)
+            var app = await _appManager.FindByClientIdAsync(clientId);
+            if (app == null)
+                return NotFound(
+                    new ErrorResponseDto
+                    {
+                        Error = $"Application (clientId='{clientId}') not found.",
+                    }
+                );
+
+            var appId = await _appManager.GetIdAsync(app);
+
+            // 4) Check join table already exists
+            var alreadyAssigned = await _dbContext
+                .Set<AuthServiceUserApplication>()
+                .AnyAsync(x => x.UserId == user.Id && x.ApplicationId == appId);
+
+            if (alreadyAssigned)
+                return Conflict(
+                    new ErrorResponseDto { Error = "User already has this application assigned." }
+                );
+
+            // 5) Insert join row
+            _dbContext
+                .Set<AuthServiceUserApplication>()
+                .Add(new AuthServiceUserApplication { UserId = user.Id, ApplicationId = appId! });
+
+            await _dbContext.SaveChangesAsync();
+
+            await tx.CommitAsync();
+
+            return Ok(new AssignRoleResponseDto());
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync();
+
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new ErrorResponseDto
-                {
-                    Error = "Role assignment failed.",
-                    Details = string.Join(", ", result.Errors.Select(e => e.Description)),
-                }
+                new ErrorResponseDto { Error = "Transaction failed.", Details = ex.Message }
             );
-
-        return Ok(
-            new AssignRoleResponseDto
-            {
-                User = user.UserName!,
-                Role = roleName,
-                Message = "Role assigned successfully.",
-            }
-        );
+        }
     }
 
     // --------------------------------------------------------------
@@ -204,78 +331,91 @@ public class RolesController(
         [FromBody] UnassignRoleDto dto
     )
     {
-        // Find user by Id / UserName / Email
-        AuthServiceUser? user = await FindUser(dto.UserIdentifier);
+        AuthServiceUser? user = await _userService.FindUserByIdentifierAsync(dto.UserIdentifier);
+        // var user = await FindUser(dto.UserIdentifier);
         if (user == null)
             return NotFound(
                 new ErrorResponseDto { Error = $"User '{dto.UserIdentifier}' not found." }
             );
 
         // Find role by Id / Name
-        IdentityRole? role = await FindRole(dto.RoleIdentifier);
+        var role = await _roleManager.FindByNameAsync(dto.RoleName);
         if (role == null)
-            return NotFound(
-                new ErrorResponseDto { Error = $"Role '{dto.RoleIdentifier}' not found." }
-            );
+            return NotFound(new ErrorResponseDto { Error = $"Role '{dto.RoleName}' not found." });
 
-        string roleName = role.Name!;
+        if (
+            !RoleService.TryDestructureRoleName(
+                dto.RoleName,
+                out var tool,
+                out var access,
+                out var error
+            )
+        )
+        {
+            return BadRequest(error);
+        }
 
-        // Check if the user actually has this role
-        if (!await _userManager.IsInRoleAsync(user, roleName))
-            return Conflict(
-                new ErrorResponseDto { Error = $"User does not have role '{roleName}'." }
-            );
+        var clientId = RoleService.ToKebabCase(tool);
 
-        // Remove role
-        IdentityResult? result = await _userManager.RemoveFromRoleAsync(user, roleName);
+        await using var tx = await _dbContext.Database.BeginTransactionAsync();
 
-        if (!result.Succeeded)
+        try
+        {
+            // 1) Check user actually has the role
+            if (!await _userManager.IsInRoleAsync(user, dto.RoleName))
+                return Conflict(
+                    new ErrorResponseDto { Error = $"User does not have role '{dto.RoleName}'." }
+                );
+
+            // 2) Remove role
+            var roleResult = await _userManager.RemoveFromRoleAsync(user, dto.RoleName);
+            if (!roleResult.Succeeded)
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new ErrorResponseDto
+                    {
+                        Error = "Role unassignment failed.",
+                        Details = string.Join(", ", roleResult.Errors.Select(e => e.Description)),
+                    }
+                );
+
+            // 3) Find corresponding application
+            var app = await _appManager.FindByClientIdAsync(clientId);
+            if (app == null)
+                return NotFound(
+                    new ErrorResponseDto
+                    {
+                        Error = $"Application (clientId='{clientId}') not found.",
+                    }
+                );
+
+            var appId = await _appManager.GetIdAsync(app);
+
+            // 4) Remove link from join table
+            var link = await _dbContext
+                .Set<AuthServiceUserApplication>()
+                .FirstOrDefaultAsync(x => x.UserId == user.Id && x.ApplicationId == appId);
+
+            if (link == null)
+                return Conflict(
+                    new ErrorResponseDto { Error = "User does not have this application assigned." }
+                );
+
+            _dbContext.Set<AuthServiceUserApplication>().Remove(link);
+            await _dbContext.SaveChangesAsync();
+
+            await tx.CommitAsync();
+
+            return Ok(new UnassignRoleResponseDto());
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync();
+
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
-                new ErrorResponseDto
-                {
-                    Error = "Role unassignment failed.",
-                    Details = string.Join(", ", result.Errors.Select(e => e.Description)),
-                }
+                new ErrorResponseDto { Error = "Transaction failed.", Details = ex.Message }
             );
-
-        return Ok(
-            new UnassignRoleResponseDto
-            {
-                User = user.UserName!,
-                Role = roleName,
-                Message = "Role unassigned successfully.",
-            }
-        );
-    }
-
-    // --------------------------------------------------------------
-    // Helper Methods
-    // --------------------------------------------------------------
-    private async Task<AuthServiceUser?> FindUser(string input)
-    {
-        // Try by Id
-        var user = await _userManager.FindByIdAsync(input);
-        if (user != null)
-            return user;
-
-        // Try by UserName
-        user = await _userManager.FindByNameAsync(input);
-        if (user != null)
-            return user;
-
-        // Try by Email
-        return await _userManager.FindByEmailAsync(input);
-    }
-
-    private async Task<IdentityRole?> FindRole(string input)
-    {
-        // Try by Id
-        var role = await _roleManager.FindByIdAsync(input);
-        if (role != null)
-            return role;
-
-        // Try by Name
-        return await _roleManager.FindByNameAsync(input);
+        }
     }
 }

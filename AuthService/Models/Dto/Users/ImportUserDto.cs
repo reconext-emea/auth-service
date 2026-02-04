@@ -2,4 +2,8 @@ using AuthService.Models.Dto.Roles;
 
 namespace AuthService.Models.Dto.Users;
 
-public sealed record ImportUserDto(string Username, IReadOnlyList<CreateRoleDto> Roles);
+public sealed record ImportUserDto(
+    string Username,
+    IReadOnlyList<CreateRoleDto> Roles,
+    UpdateUserPropertiesDto? CustomProperties
+);

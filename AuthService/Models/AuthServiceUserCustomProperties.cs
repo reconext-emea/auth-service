@@ -20,26 +20,57 @@ public class AuthServiceUserCustomProperties
 
     public AuthServiceUserCustomProperties(
         AuthServiceUser user,
+        OfficeLocationToRegionAdapter adapter,
         UpdateUserPropertiesDto? dto = null
     )
     {
-        Region = OfficeLocationToRegionAdapter.GetRegionOfOfficeLocation(user.OfficeLocation);
+        Region = adapter.GetRegionOfOfficeLocation(user.OfficeLocation);
 
-        if (!string.IsNullOrWhiteSpace(dto?.Confidentiality))
+        if (
+            !string.IsNullOrWhiteSpace(dto?.Confidentiality)
+            && ConfidentialityClass.IsValid(dto.Confidentiality)
+        )
+        {
             Confidentiality = dto.Confidentiality;
+        }
 
         if (dto?.Programs is { Length: > 0 })
-            Programs = [.. dto.Programs];
+        {
+            Programs =
+            [
+                .. dto
+                    .Programs.Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Select(p => p.Trim())
+                    .Distinct(),
+            ];
+        }
     }
 
-    public void UpdateProperties(AuthServiceUser user, UpdateUserPropertiesDto? dto)
+    public void UpdateProperties(
+        AuthServiceUser user,
+        OfficeLocationToRegionAdapter adapter,
+        UpdateUserPropertiesDto? dto
+    )
     {
-        Region = OfficeLocationToRegionAdapter.GetRegionOfOfficeLocation(user.OfficeLocation);
+        Region = adapter.GetRegionOfOfficeLocation(user.OfficeLocation);
 
-        if (!string.IsNullOrWhiteSpace(dto?.Confidentiality))
+        if (
+            !string.IsNullOrWhiteSpace(dto?.Confidentiality)
+            && ConfidentialityClass.IsValid(dto.Confidentiality)
+        )
+        {
             Confidentiality = dto.Confidentiality;
+        }
 
         if (dto?.Programs is { Length: > 0 })
-            Programs = [.. dto.Programs];
+        {
+            Programs =
+            [
+                .. dto
+                    .Programs.Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Select(p => p.Trim())
+                    .Distinct(),
+            ];
+        }
     }
 }
