@@ -325,166 +325,166 @@ export declare namespace AuthService {
             passport: UsersService.JWTPayloadPassport;
         } | false>;
     }
-    export namespace Dto {
-        namespace Errors {
-            interface ErrorResponseDto {
-            }
-        }
-        namespace Roles {
-            interface GetAccessLevelsResponseDto {
-                accessLevels: string[];
-            }
-            interface GetPermissionTypesResponseDto {
-                permissions: string[];
-            }
-            interface GetRolesResponseDto {
-                roles: string[];
-            }
-            interface GetRolesOfUserResponseDto {
-                roles: string[];
-            }
-            interface CreateRoleDto {
-                tool: string;
-                access: string;
-            }
-            interface CreateRoleResponseDto {
-                message: string;
-            }
-            interface DeleteRoleResponseDto {
-                message: string;
-            }
-            interface AssignRoleDto {
-                userIdentifier: string;
-                roleName: string;
-            }
-            interface AssignRoleResponseDto {
-                message: string;
-            }
-            interface UnassignRoleDto {
-                userIdentifier: string;
-                roleName: string;
-            }
-            interface UnassignRoleResponseDto {
-                message: string;
-            }
-        }
-        namespace Miscellaneous {
-            interface GetAllowedEmeaOffices {
-                offices: string[];
-            }
-        }
-        namespace Applications {
-            interface ApplicationDto {
-                id: string;
-                clientId: string;
-                displayName: string;
-            }
-            interface GetApplicationsResponseDto {
-                applications: ApplicationDto[];
-            }
-            interface GetApplicationsOfUserResponseDto {
-                applications: ApplicationDto[];
-            }
-        }
-        namespace Users {
-            interface GetDepartmentsResponseDto {
-                departments: string[];
-            }
-            interface ImportUsersRequestDto {
-                users: [
-                    {
-                        username: string;
-                        roles: [
-                            {
-                                tool: string;
-                                access: string;
-                            }
-                        ];
-                        customProperties?: {
-                            confidentiality: string;
-                            programs: string[];
-                        };
-                    }
-                ];
-            }
-            interface ImportUsersResponseDto {
-                created: number;
-                skipped: number;
-                errors: [
-                    {
-                        error: string;
-                        details: string;
-                    }
-                ];
-                message: string;
-            }
-            interface DeleteUserResponseDto {
-                message: string;
-            }
-            interface AuthServiceUserSettingsDto {
-                preferredLanguageCode: string;
-                preferredColorThemeCode: string;
-            }
-            interface AuthServiceUserCustomPropertiesDto {
-                confidentiality: string;
-                region: string;
-                programs: ReadonlyArray<string>;
-            }
-            interface AuthServiceUserDto {
-                id: string;
-                userName: string;
-                email: string;
-                displayName: string;
-                officeLocation: string;
-                employeeId: string;
-                department: string;
-                jobTitle: string;
-                appSettings: AuthServiceUserSettingsDto;
-                customProperties: AuthServiceUserCustomPropertiesDto;
-                applications: Dto.Applications.ApplicationDto[];
-            }
-            interface GetUsersResponseDto {
-                users: AuthServiceUserDto[];
-            }
-            interface GetUserResponseDto {
-                user: AuthServiceUserDto;
-            }
-            interface UpdateEmployeeIdDto {
-                employeeId: string;
-            }
-            interface UpdateEmployeeIdResponseDto {
-                message: string;
-            }
-            interface UpdateUserSettingsDto {
-                preferredLanguageCode: string;
-                preferredColorThemeCode: string;
-            }
-            interface UpdateUserSettingsResponseDto {
-                message: string;
-            }
-            interface UpdateUserPropertiesDto {
-                confidentiality: string;
-                programs: string[];
-            }
-            interface UpdateUserPropertiesResponseDto {
-                message: string;
-            }
-            interface GetUserClaimsResponseDto {
-                userClaims: string[];
-                roleClaims: string[];
-            }
-            interface DeleteClaimFromUserResponseDto {
-                message: string;
-            }
-            interface AddClaimToUserDto {
-                tool: string;
-                privilege: string;
-            }
-            interface AddClaimToUserDtoResponseDto {
-                message: string;
-            }
+    export {};
+}
+export declare namespace Dto {
+    namespace Errors {
+        interface ErrorResponseDto {
         }
     }
-    export {};
+    namespace Roles {
+        interface GetAccessLevelsResponseDto {
+            accessLevels: string[];
+        }
+        interface GetPermissionTypesResponseDto {
+            permissions: string[];
+        }
+        interface GetRolesResponseDto {
+            roles: string[];
+        }
+        interface GetRolesOfUserResponseDto {
+            roles: string[];
+        }
+        interface CreateRoleDto {
+            tool: string;
+            access: string;
+        }
+        interface CreateRoleResponseDto {
+            message: string;
+        }
+        interface DeleteRoleResponseDto {
+            message: string;
+        }
+        interface AssignRoleDto {
+            userIdentifier: string;
+            roleName: string;
+        }
+        interface AssignRoleResponseDto {
+            message: string;
+        }
+        interface UnassignRoleDto {
+            userIdentifier: string;
+            roleName: string;
+        }
+        interface UnassignRoleResponseDto {
+            message: string;
+        }
+    }
+    namespace Miscellaneous {
+        interface GetAllowedEmeaOffices {
+            offices: string[];
+        }
+    }
+    namespace Applications {
+        interface ApplicationDto {
+            id: string;
+            clientId: string;
+            displayName: string;
+        }
+        interface GetApplicationsResponseDto {
+            applications: ApplicationDto[];
+        }
+        interface GetApplicationsOfUserResponseDto {
+            applications: ApplicationDto[];
+        }
+    }
+    namespace Users {
+        interface GetDepartmentsResponseDto {
+            departments: string[];
+        }
+        interface ImportUsersRequestDto {
+            users: [
+                {
+                    username: string;
+                    roles: [
+                        {
+                            tool: string;
+                            access: string;
+                        }
+                    ];
+                    customProperties?: {
+                        confidentiality: string;
+                        programs: string[];
+                    };
+                }
+            ];
+        }
+        interface ImportUsersResponseDto {
+            created: number;
+            skipped: number;
+            errors: [
+                {
+                    error: string;
+                    details: string;
+                }
+            ];
+            message: string;
+        }
+        interface DeleteUserResponseDto {
+            message: string;
+        }
+        interface AuthServiceUserSettingsDto {
+            preferredLanguageCode: string;
+            preferredColorThemeCode: string;
+        }
+        interface AuthServiceUserCustomPropertiesDto {
+            confidentiality: string;
+            region: string;
+            programs: ReadonlyArray<string>;
+        }
+        interface AuthServiceUserDto {
+            id: string;
+            userName: string;
+            email: string;
+            displayName: string;
+            officeLocation: string;
+            employeeId: string;
+            department: string;
+            jobTitle: string;
+            appSettings: AuthServiceUserSettingsDto;
+            customProperties: AuthServiceUserCustomPropertiesDto;
+            applications: Dto.Applications.ApplicationDto[];
+        }
+        interface GetUsersResponseDto {
+            users: AuthServiceUserDto[];
+        }
+        interface GetUserResponseDto {
+            user: AuthServiceUserDto;
+        }
+        interface UpdateEmployeeIdDto {
+            employeeId: string;
+        }
+        interface UpdateEmployeeIdResponseDto {
+            message: string;
+        }
+        interface UpdateUserSettingsDto {
+            preferredLanguageCode: string;
+            preferredColorThemeCode: string;
+        }
+        interface UpdateUserSettingsResponseDto {
+            message: string;
+        }
+        interface UpdateUserPropertiesDto {
+            confidentiality: string;
+            programs: string[];
+        }
+        interface UpdateUserPropertiesResponseDto {
+            message: string;
+        }
+        interface GetUserClaimsResponseDto {
+            userClaims: string[];
+            roleClaims: string[];
+        }
+        interface DeleteClaimFromUserResponseDto {
+            message: string;
+        }
+        interface AddClaimToUserDto {
+            tool: string;
+            privilege: string;
+        }
+        interface AddClaimToUserDtoResponseDto {
+            message: string;
+        }
+    }
 }
 export {};

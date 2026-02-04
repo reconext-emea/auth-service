@@ -35,7 +35,7 @@ https://10.41.0.85:5081/.well-known/openid-configuration
 
 These endpoints expose the public RSA keys used to verify JWT signatures.
 
-## Frontend Types
+## Ts Types
 
 To install the TypeScript types exposed by this service, run:
 
