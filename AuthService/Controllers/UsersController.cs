@@ -6,7 +6,6 @@ using AuthService.Models.Dto.Errors;
 using AuthService.Models.Dto.Users;
 using AuthService.Services.Identity;
 using AuthService.Services.User;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +16,6 @@ namespace AuthService.Controllers;
 [ApiController]
 [ApiExplorerSettings(GroupName = "users")]
 [Route("api/users")]
-[Authorize]
 public class UsersController(
     UserManager<AuthServiceUser> userManager,
     RoleManager<IdentityRole> roleManager,

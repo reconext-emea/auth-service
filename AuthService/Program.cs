@@ -6,6 +6,7 @@ using AuthService.Data;
 using AuthService.Models;
 using AuthService.Services.OpenIddict;
 using AuthService.Services.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -162,7 +163,6 @@ services
     });
 
 // ---------- Auth / API ----------
-// services.AddAuthentication();
 services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = OpenIddict
@@ -177,7 +177,23 @@ services.AddAuthentication(options =>
         .AuthenticationScheme;
 });
 
-services.AddAuthorization();
+services.AddAuthorization(options =>
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        // In dev: allow everything
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAssertion(_ => true)
+            .Build();
+    }
+    else
+    {
+        // In non-dev: require auth everywhere by default
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+    }
+});
 
 services.AddControllers();
 services.AddEndpointsApiExplorer();
